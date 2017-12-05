@@ -52,7 +52,7 @@ public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
         e.printStackTrace();
       }
       //System.out.println("s");
-      jedis.hset("eventWithLinkage" + String.valueOf(System.currentTimeMillis()), "req", s);
+      jedis.hset("eventWithLinkage_" + String.valueOf(System.currentTimeMillis()), "req", s);
     }
 //    for (int i = 0; i < req.getEventWithLinkagesCount(); i++) {
 //      EventWithLinkage eventWithLinkage = req.getEventWithLinkages(i);

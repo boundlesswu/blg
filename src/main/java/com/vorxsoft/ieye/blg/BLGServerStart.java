@@ -4,6 +4,7 @@ import com.coreos.jetcd.Watch;
 import com.coreos.jetcd.watch.WatchEvent;
 import com.coreos.jetcd.watch.WatchResponse;
 import com.vorxsoft.ieye.blg.grpc.VsIeyeClient;
+import com.vorxsoft.ieye.blg.process.LinkageProcess;
 import com.vorxsoft.ieye.microservice.MicroService;
 import com.vorxsoft.ieye.microservice.MicroServiceImpl;
 import com.vorxsoft.ieye.microservice.WatchCallerInterface;
@@ -27,10 +28,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class BLGServerStart implements WatchCallerInterface{
-  private static String serviceName;
+public class BLGServerStart implements WatchCallerInterface {
+  private static String serviceName = "server_blg";
   private static String hostip;
-  private static int ttl=60;
+  private static int ttl = 60;
   private String registerCenterName;
   private String activemqName;
   private String activemqIp;
@@ -86,22 +87,28 @@ public class BLGServerStart implements WatchCallerInterface{
 
     }
   }
+
   private static String registerCenterAddress;
-  private static int PORT=66666;
+  private static int PORT = 66666;
   private Server server;
-  private String redisIp;
-  private int redisPort;
+  private static String redisIp;
+  private static int redisPort;
   private Connection conn;
   private String dbUrl;
-  private String dbname;
-  private String dbAddress;
-  private String driverClassName;
-  private String dbUser;
-  private String dbPasswd;
+  private static String dbname;
+  private static String dbAddress;
+  private static String driverClassName;
+  private static String dbUser;
+  private static String dbPasswd;
   private Jedis jedis;
   private VsIeyeClient cmsClient;
   private final String cfgFileName = "blg.xml";
   private InputStream cfgFile;
+
+  public void setCmsClient(VsIeyeClient cmsClient) {
+    this.cmsClient = cmsClient;
+  }
+
 
   public void dbInit() throws SQLException, ClassNotFoundException {
     dbUrl = "jdbc:" + dbname + "://" + dbAddress;
@@ -115,19 +122,20 @@ public class BLGServerStart implements WatchCallerInterface{
     jedis = new Jedis(redisIp, redisPort);
   }
 
-  private void start() throws Exception{
-    server = NettyServerBuilder.forPort(PORT).addService(new BLGServer(redisIp,redisPort).bindService()).build();
+  private void start() throws Exception {
+    server = NettyServerBuilder.forPort(PORT).addService(new BLGServer(redisIp, redisPort).bindService()).build();
     server.start();
 
-    Runtime.getRuntime().addShutdownHook(new Thread(){
+    Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
-      public void  run(){
+      public void run() {
         System.err.println("*** shutting down gRPC server since JVM is shutting down");
         BLGServerStart.this.stop();
         System.err.println("*** server shut down");
       }
     });
   }
+
   public VsIeyeClient getCmsClient() {
     return cmsClient;
   }
@@ -157,8 +165,26 @@ public class BLGServerStart implements WatchCallerInterface{
     myservice.RegisteWithHB(serviceName, hostip, PORT, ttl);
     myservice.SetWatcher("server_", true);
 
+    String cmsAddress = myservice.Resolve("cms").toString();
+    if (cmsAddress == null) {
+      System.out.println("cannot resolve cms server  address");
+    } else {
+      System.out.println("successful resolve cms server  address:" + cmsAddress);
+      blgServerStart.setCmsClient(new VsIeyeClient("cms", cmsAddress));
+    }
+
+    LinkageProcess linkageProcess = new LinkageProcess();
+    linkageProcess.setCmsIeyeClient(blgServerStart.getCmsClient());
+    linkageProcess.setName("linkageProcess");
+
+    linkageProcess.dbInit(dbname, dbAddress, driverClassName, dbUser, dbPasswd);
+    linkageProcess.redisInit(redisIp, redisPort);
+
+    new Thread(linkageProcess).start();
+
     TimeUnit.SECONDS.sleep(3000);
   }
+
   public void getConfigPath() throws FileNotFoundException {
     String tmp = String.valueOf(this.getClass().getClassLoader().getResource(cfgFileName));
     System.out.println("tmp:" + tmp);
@@ -167,6 +193,7 @@ public class BLGServerStart implements WatchCallerInterface{
     else
       cfgFile = this.getClass().getClassLoader().getResourceAsStream(cfgFileName);
   }
+
   public void cfgInit() throws FileNotFoundException {
     // 解析books.xml文件
     // 创建SAXReader的对象reader
@@ -231,7 +258,7 @@ public class BLGServerStart implements WatchCallerInterface{
             if (lname.equals("name"))
               redisName = lvalue;
             else if (lname.equals("ip"))
-              redisIp= lvalue;
+              redisIp = lvalue;
             else if (lname.equals("port"))
               redisPort = Integer.parseInt(lvalue);
           }
@@ -246,10 +273,9 @@ public class BLGServerStart implements WatchCallerInterface{
         }
         //System.out.println("=====结束遍历某一本书=====");
       }
-
     } catch (DocumentException e) {
       e.printStackTrace();
-
+    }
   }
 
 }
