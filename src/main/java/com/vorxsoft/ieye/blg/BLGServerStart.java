@@ -9,10 +9,13 @@ import com.vorxsoft.ieye.microservice.MicroServiceImpl;
 import com.vorxsoft.ieye.microservice.WatchCallerInterface;
 import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
+import org.dom4j.Attribute;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import redis.clients.jedis.Jedis;
 
-import javax.swing.text.Document;
-import javax.swing.text.Element;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,6 +31,11 @@ public class BLGServerStart implements WatchCallerInterface{
   private static String serviceName;
   private static String hostip;
   private static int ttl=60;
+  private String registerCenterName;
+  private String activemqName;
+  private String activemqIp;
+  private int activemqPort;
+  private String redisName;
 
 
   @Override
@@ -223,7 +231,7 @@ public class BLGServerStart implements WatchCallerInterface{
             if (lname.equals("name"))
               redisName = lvalue;
             else if (lname.equals("ip"))
-              redisIP = lvalue;
+              redisIp= lvalue;
             else if (lname.equals("port"))
               redisPort = Integer.parseInt(lvalue);
           }
@@ -241,7 +249,7 @@ public class BLGServerStart implements WatchCallerInterface{
 
     } catch (DocumentException e) {
       e.printStackTrace();
-    }
+
   }
 
 }
