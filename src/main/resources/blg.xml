@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<microservice>
+    <info>
+        <name>server_ems</name>
+        <id>1</id>>
+        <hostip>192.168.20.134</hostip>
+        <port>9999</port>
+        <ttl>60</ttl>
+    </info>>
+    <database>
+        <name>postgresql</name>
+        <address>192.168.20.222:5432/vs_ieye</address>
+        <user>vorx</user>
+        <passwd>123456</passwd>
+        <driverClassName>org.postgresql.Driver</driverClassName>
+    </database>
+    <registerCenter>
+        <name>etcd</name>
+        <address>http://192.168.20.251:2379</address>
+    </registerCenter>
+    <redis>
+        <name>redis1</name>
+        <ip>192.168.20.251</ip>
+        <port>6379</port>
+    </redis>
+    <activemq>
+        <name>activemq1</name>
+        <ip>127.0.0.1</ip>
+        <port>61616</port>
+    </activemq>>
+</microservice>

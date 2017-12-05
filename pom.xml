@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.vorxsoft.ieye</groupId>
+    <artifactId>blg</artifactId>
+    <version>4.0.1.2</version>
+    <properties>
+        <grpc.version>1.4.0</grpc.version>
+    </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-5</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>com.vorxsoft.ieye.eventservice.EventServerStart</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>assemble-all</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-lib-src-webapps</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <tasks>
+                                <copy file="${basedir}/target/blg-${version}-jar-with-dependencies.jar"
+                                      tofile="${basedir}/target/blg/blg.jar"
+                                      overwrite="true"/>
+                                <copy file="${basedir}\src\main\resources\blg.xml"
+                                      tofile="${basedir}/target/blg/blg.xml"
+                                      overwrite="true"/>
+                                <copy file="${basedir}\version.txt"
+                                      tofile="${basedir}/target/blg/version.txt"
+                                      overwrite="true"/>
+                                <copy file="${basedir}\startup.bat"
+                                      tofile="${basedir}/target/blg/startup.bat"
+                                      overwrite="true"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>com.vorxsoft.ieye</groupId>
+            <artifactId>proto</artifactId>
+            <version>4.0.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vorxsoft</groupId>
+            <artifactId>micro-service</artifactId>
+            <version>4.0.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty</artifactId>
+            <version>${grpc.version}</version>
+        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>com.aliyun</groupId>-->
+        <!--<artifactId>aliyun-java-sdk-core</artifactId>-->
+        <!--<version>3.3.1</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--<groupId>com.aliyun</groupId>-->
+        <!--<artifactId>aliyun-java-sdk-dysmsapi</artifactId>-->
+        <!--<version>1.0.0</version>-->
+        <!--</dependency>-->
+
+    </dependencies>
+
+
+</project>
