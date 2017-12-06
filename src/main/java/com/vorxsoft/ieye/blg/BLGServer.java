@@ -48,6 +48,7 @@ public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
       String s = null;
       try {
         s = JsonFormat.printer().print(req.toBuilder());
+        //s = JsonFormat.printToString(req);
       } catch (InvalidProtocolBufferException e) {
         e.printStackTrace();
       }

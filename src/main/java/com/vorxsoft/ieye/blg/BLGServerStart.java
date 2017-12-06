@@ -165,7 +165,7 @@ public class BLGServerStart implements WatchCallerInterface {
     myservice.RegisteWithHB(serviceName, hostip, PORT, ttl);
     myservice.SetWatcher("server_", true);
 
-    String cmsAddress = myservice.Resolve("cms").toString();
+    String cmsAddress = myservice.Resolve("cms");
     if (cmsAddress == null) {
       System.out.println("cannot resolve cms server  address");
     } else {

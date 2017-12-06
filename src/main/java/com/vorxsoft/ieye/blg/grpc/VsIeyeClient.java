@@ -121,7 +121,7 @@ public class VsIeyeClient extends GrpcClient {
   }
   //云台联动-调用巡航	linkage_cruise
   // PTZCruise (PTZCruiseRequest) returns (PTZCruiseReply)
-  public void PTZCruise(PTZCruiseRequest request){
+  public void pTZCruise(PTZCruiseRequest request){
     StreamObserver<PTZCruiseReply> streamObserver = new StreamObserver<PTZCruiseReply>() {
       @Override
       public void onNext(PTZCruiseReply ptzCruiseReply) {

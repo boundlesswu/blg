@@ -4,7 +4,7 @@
         <name>server_ems</name>
         <id>1</id>>
         <hostip>192.168.20.134</hostip>
-        <port>9999</port>
+        <port>60601</port>
         <ttl>60</ttl>
     </info>>
     <database>
