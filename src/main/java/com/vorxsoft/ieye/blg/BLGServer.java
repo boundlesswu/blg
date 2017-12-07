@@ -2,22 +2,64 @@ package com.vorxsoft.ieye.blg;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import com.vorxsoft.ieye.blg.process.LinkageItem;
 import com.vorxsoft.ieye.proto.*;
 import io.grpc.stub.StreamObserver;
 import redis.clients.jedis.Jedis;
 
+import java.util.HashMap;
+
 public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
   private Jedis jedis;
+  HashMap<String, LinkageItem> linkageItemHashMap;
 
   BLGServer(String ip, int port) {
     jedis = new Jedis(ip, port);
+  }
+
+  public Jedis getJedis() {
+    return jedis;
+  }
+
+  public void setJedis(Jedis jedis) {
+    this.jedis = jedis;
+  }
+
+  public HashMap<String, LinkageItem> getLinkageItemHashMap() {
+    return linkageItemHashMap;
+  }
+
+  public void setLinkageItemHashMap(HashMap<String, LinkageItem> linkageItemHashMap) {
+    this.linkageItemHashMap = linkageItemHashMap;
+  }
+
+  public void updateExecResult(LiveScreenReply req) {
+    LinkageItem linkageItem = getLinkageItemHashMap().get(req.getSBusinessID());
+    if (linkageItem != null) {
+      linkageItem.setExecResult(req.getResult());
+    }
+  }
+
+  public void updateExecResult(PTZPresetReply req) {
+    LinkageItem linkageItem = getLinkageItemHashMap().get(req.getSBusinessID());
+    if (linkageItem != null) {
+      linkageItem.setExecResult(req.getResult());
+    }
+  }
+
+  public void updateExecResult(PTZCruiseReply req) {
+    LinkageItem linkageItem = getLinkageItemHashMap().get(req.getSBusinessID());
+    if (linkageItem != null) {
+      linkageItem.setExecResult(req.getResult());
+    }
   }
 
   //rpc PlayLiveScreenResult (LiveScreenReply) returns (DefaultReply)
   @Override
   public void playLiveScreenResult(LiveScreenReply req, StreamObserver<DefaultReply> reply) {
     System.out.println("receiver" + req);
-    DefaultReply defaultReply = DefaultReply.newBuilder().setResult(1).setSBusinessID("1212121").build();
+    updateExecResult(req);
+    DefaultReply defaultReply = DefaultReply.newBuilder().setResult(1).setSBusinessID(req.getSBusinessID()).build();
     reply.onNext(defaultReply);
     reply.onCompleted();
   }
@@ -26,7 +68,8 @@ public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
   @Override
   public void pTZPresetResult(PTZPresetReply req, StreamObserver<DefaultReply> reply) {
     System.out.println("receiver" + req);
-    DefaultReply defaultReply = DefaultReply.newBuilder().setResult(1).setSBusinessID("1212121").build();
+    updateExecResult(req);
+    DefaultReply defaultReply = DefaultReply.newBuilder().setResult(1).setSBusinessID(req.getSBusinessID()).build();
     reply.onNext(defaultReply);
     reply.onCompleted();
   }
@@ -35,7 +78,8 @@ public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
   @Override
   public void pTZCruiseResult(PTZCruiseReply req, StreamObserver<DefaultReply> reply) {
     System.out.println("receiver" + req);
-    DefaultReply defaultReply = DefaultReply.newBuilder().setResult(1).setSBusinessID("1212121").build();
+    updateExecResult(req);
+    DefaultReply defaultReply = DefaultReply.newBuilder().setResult(1).setSBusinessID(req.getSBusinessID()).build();
     reply.onNext(defaultReply);
     reply.onCompleted();
   }
