@@ -182,7 +182,7 @@ public class BLGServerStart implements WatchCallerInterface {
 
     new Thread(linkageProcess).start();
 
-    TimeUnit.SECONDS.sleep(3000);
+    TimeUnit.DAYS.sleep(3000);
   }
 
   public void getConfigPath() throws FileNotFoundException {
