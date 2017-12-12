@@ -4,9 +4,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.vorxsoft.ieye.blg.grpc.VsIeyeClient;
 import com.vorxsoft.ieye.blg.util.Generalid;
+import com.vorxsoft.ieye.blg.util.ResUtil;
+import com.vorxsoft.ieye.blg.util.ResUtilImpl;
 import com.vorxsoft.ieye.proto.*;
 import redis.clients.jedis.Jedis;
-import sun.awt.image.ImageWatched;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -21,6 +22,7 @@ public class LinkageProcess implements Runnable {
   private Connection conn;
   VsIeyeClient cmsIeyeClient;
   HashMap<String, LinkageItem> linkageItemHashMap;
+  ResUtil resUtil;
 
   public HashMap<String, LinkageItem> getLinkageItemHashMap() {
     return linkageItemHashMap;
@@ -81,11 +83,15 @@ public class LinkageProcess implements Runnable {
     Class.forName(driverClassName);
     conn = DriverManager.getConnection(dbUrl, dbUser, dbPasswd);
     //st = conn.createStatement();
+    resUtil = new ResUtilImpl();
+    resUtil.init(conn);
   }
 
   public void redisInit(String redisIP, int redisPort) {
     jedis = new Jedis(redisIP, redisPort);
   }
+
+
 
   @Override
   public void run() {
@@ -172,7 +178,9 @@ public class LinkageProcess implements Runnable {
       String bussinessId = Generalid.GetBusinessID();
       ///第二次调用arg3
       if (isOverTime(linkage.getSArgs(3), diffTime)) {
-        PTZPresetRequest request = PTZPresetRequest.newBuilder().setSResNo(resNo).
+        PTZPresetRequest request = PTZPresetRequest.newBuilder().
+                setSResNo(resNo).
+                setNResid(resUtil.getResId(resNo)).
                 setSBusinessID(bussinessId).
                 setSPresetNo(presetNo2).build();
         getCmsIeyeClient().pTZPreset(request);
@@ -217,10 +225,10 @@ public class LinkageProcess implements Runnable {
     }
   }
 
-  public void addLinkageItemHashMap(int eventId, Linkage linkage,
+  public void addLinkageItemHashMap(int eventId, int eventLogId,Linkage linkage,
                                     String bussinessId,
                                     boolean hasInsertDB, boolean needRelinkage, boolean hasReLinkage) {
-    LinkageItem linkageItem = LinkageItem.newBuilder().
+    LinkageItem linkageItem = LinkageItem.newBuilder().eventLogId(eventLogId).
             eventId(eventId).linkage(linkage).
             linkageTime(System.currentTimeMillis()).
             businessID(bussinessId).
@@ -232,7 +240,7 @@ public class LinkageProcess implements Runnable {
     getLinkageItemHashMap().put(bussinessId, linkageItem);
   }
 
-  public void processLinkage(Linkage linkage, int eventId) {
+  public void processLinkage(Linkage linkage, int eventId,int eventLogId) {
     String type = linkage.getSLinkageType();
     if (type.equals(sLinkageClient)) {
 
@@ -248,7 +256,7 @@ public class LinkageProcess implements Runnable {
               setSScreenResNo(resScreenNo).setNWindow(window).
               setSBusinessID(bussinessId).build();
       getCmsIeyeClient().PlayLiveScreen(request);
-      addLinkageItemHashMap(eventId, linkage, bussinessId, false, false, false);
+      addLinkageItemHashMap(eventId,eventLogId, linkage, bussinessId, false, false, false);
     } else if (type.equals(sLinkagePreset)) {
 //      云台联动-调用预置点	linkage_preset			可设置多条
 //      arg1	res_no	摄像机资源编号
@@ -262,10 +270,11 @@ public class LinkageProcess implements Runnable {
       String bussinessId = Generalid.GetBusinessID();
       int duratime = Integer.parseInt(linkage.getSArgs(3));
       PTZPresetRequest request = PTZPresetRequest.newBuilder().setSResNo(resNo).
+              setNResid(resUtil.getResId(resNo)).
               setSBusinessID(bussinessId).
               setSPresetNo(presetNo1).build();
       getCmsIeyeClient().pTZPreset(request);
-      addLinkageItemHashMap(eventId, linkage, bussinessId, false, true, false);
+      addLinkageItemHashMap(eventId,eventLogId, linkage, bussinessId, false, true, false);
     } else if (type.equals(sLinkageCruise)) {
 //      云台联动-调用巡航	linkage_cruise			可设置多条
 //      arg1	res_no	摄像机资源编号
@@ -279,7 +288,7 @@ public class LinkageProcess implements Runnable {
       PTZCruiseRequest request = PTZCruiseRequest.newBuilder().setSResNo(resNo).setEmAct(OPT_ACT.OA_ON).
               setCruiseNo(cruiseNo).setSBusinessID(bussinessId).build();
       getCmsIeyeClient().pTZCruise(request);
-      addLinkageItemHashMap(eventId, linkage, bussinessId, false, true, false);
+      addLinkageItemHashMap(eventId,eventLogId, linkage, bussinessId, false, true, false);
     } else if (type.equals(sLinkageSio)) {
 //      报警输出	linkage_sio			可设置多条
 //      arg1	res_no	开关量输出通道资源编号
@@ -292,7 +301,7 @@ public class LinkageProcess implements Runnable {
       AlarmControlRequest request = AlarmControlRequest.newBuilder().setSResNo(resNo).
               setSBusinessID(bussinessId).setNCmd(1).build();
       getCmsIeyeClient().alarmControl(request);
-      addLinkageItemHashMap(eventId, linkage, bussinessId, false, true, false);
+      addLinkageItemHashMap(eventId,eventLogId, linkage, bussinessId, false, true, false);
     } else if (type.equals(sLinkageRecord)) {
     } else if (type.equals(sLinkageSms)) {
     } else if (type.equals(sLinkageSnapshot)) {
@@ -313,9 +322,10 @@ public class LinkageProcess implements Runnable {
         EventWithLinkage eventWithLinkage = req.getEventWithLinkages(j);
         Events event = eventWithLinkage.getEvent();
         int eventId = event.getNEventID();
+        int eventLogId = event.getNEventlogID();
         for (int k = 0; k < eventWithLinkage.getLinkagesCount(); k++) {
           Linkage linkage = eventWithLinkage.getLinkages(k);
-          processLinkage(linkage, eventId);
+          processLinkage(linkage, eventId,eventLogId);
           //if(linkage.getSLinkageType().equals())
 
         }
@@ -344,6 +354,7 @@ public class LinkageProcess implements Runnable {
         JsonFormat.parser().merge(s, builder);
         ReportLinkageRequest req = builder.build();
         reportLinkageRequests.add(req);
+        getJedis().del(keyStr);
       } catch (InvalidProtocolBufferException e) {
         e.printStackTrace();
       }

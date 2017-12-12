@@ -14,6 +14,7 @@ import static com.vorxsoft.ieye.blg.util.Constant.sLinkageSnapshot;
 
 public class LinkageItem {
   private int eventId;
+  private int eventLogId;
   private Linkage linkage;
   private String  businessID;
   private long linkageTime;
@@ -21,6 +22,30 @@ public class LinkageItem {
   private boolean needRelinkage = false;
   private boolean hasReLinkage  = false;
   private int execResult = 0;
+
+  @Override
+  public String toString() {
+    return "LinkageItem{" +
+            "eventId=" + eventId +
+            ", eventLogId=" + eventLogId +
+            ", linkage=" + linkage +
+            ", businessID='" + businessID + '\'' +
+            ", linkageTime=" + linkageTime +
+            ", hasInsertDB=" + hasInsertDB +
+            ", needRelinkage=" + needRelinkage +
+            ", hasReLinkage=" + hasReLinkage +
+            ", execResult=" + execResult +
+            '}';
+  }
+
+  public int getEventLogId() {
+    return eventLogId;
+  }
+
+  public void setEventLogId(int eventLogId) {
+    this.eventLogId = eventLogId;
+  }
+
 
   public int getExecResult() {
     return execResult;
@@ -110,7 +135,7 @@ public class LinkageItem {
 //    0-成功;非0记录错误码
     String sql = "INSERT INTO tl_linkage(event_log_id,linkage_type,linkage_desc,exec_result) VALUES (?,?,?,?)";
     PreparedStatement pstmt = conn.prepareStatement(sql);
-    pstmt.setInt(1, getEventId());
+    pstmt.setInt(1, getEventLogId());
     pstmt.setString(2, getLinkage().getSLinkageType());
     pstmt.setString(3, linkageDesc);
     pstmt.setInt(4 , getExecResult());
@@ -153,6 +178,7 @@ public class LinkageItem {
 
   private LinkageItem(Builder builder) {
     setEventId(builder.eventId);
+    setEventLogId(builder.eventLogId);
     setLinkage(builder.linkage);
     setBusinessID(builder.businessID);
     setLinkageTime(builder.linkageTime);
@@ -198,19 +224,10 @@ public class LinkageItem {
     this.linkageTime = linkageTime;
   }
 
-  @Override
-  public String toString() {
-    return "LinkageItem{" +
-            "eventId=" + eventId +
-            ", linkage=" + linkage +
-            ", businessID='" + businessID + '\'' +
-            ", linkageTime=" + linkageTime +
-            '}';
-  }
-
 
   public static final class Builder {
     private int eventId;
+    private int eventLogId;
     private Linkage linkage;
     private String businessID;
     private long linkageTime;
@@ -224,6 +241,11 @@ public class LinkageItem {
 
     public Builder eventId(int val) {
       eventId = val;
+      return this;
+    }
+
+    public Builder eventLogId(int val) {
+      eventLogId = val;
       return this;
     }
 

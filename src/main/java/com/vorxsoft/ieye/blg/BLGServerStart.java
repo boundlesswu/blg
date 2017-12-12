@@ -102,7 +102,7 @@ public class BLGServerStart implements WatchCallerInterface {
   private static String dbPasswd;
   private Jedis jedis;
   private VsIeyeClient cmsClient;
-  private final String cfgFileName = "blg.xml";
+  private final String cfgFileName = "blg_service.xml";
   private InputStream cfgFile;
 
   public void setCmsClient(VsIeyeClient cmsClient) {
@@ -165,7 +165,7 @@ public class BLGServerStart implements WatchCallerInterface {
     myservice.RegisteWithHB(serviceName, hostip, PORT, ttl);
     myservice.SetWatcher("server_", true);
 
-    String cmsAddress = myservice.Resolve("cms");
+    String cmsAddress = myservice.Resolve("server_cms");
     if (cmsAddress == null) {
       System.out.println("cannot resolve cms server  address");
     } else {

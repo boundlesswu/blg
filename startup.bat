@@ -1,5 +1,5 @@
 @echo off
 
-start javaw -jar blg.jar
+start javaw -jar blg_service.jar
 
 exit

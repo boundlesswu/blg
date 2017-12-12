@@ -27,7 +27,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.vorxsoft.ieye.eventservice.EventServerStart</mainClass>
+                            <mainClass>com.vorxsoft.ieye.blg.BLGServerStart</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -53,16 +53,16 @@
                         <configuration>
                             <tasks>
                                 <copy file="${basedir}/target/blg-${version}-jar-with-dependencies.jar"
-                                      tofile="${basedir}/target/blg/blg.jar"
+                                      tofile="${basedir}/target/blg_service/blg_service.jar"
                                       overwrite="true"/>
-                                <copy file="${basedir}\src\main\resources\blg.xml"
-                                      tofile="${basedir}/target/blg/blg.xml"
+                                <copy file="${basedir}\src\main\resources\blg_service.xml"
+                                      tofile="${basedir}/target/blg_service/blg_service.xml"
                                       overwrite="true"/>
                                 <copy file="${basedir}\version.txt"
-                                      tofile="${basedir}/target/blg/version.txt"
+                                      tofile="${basedir}/target/blg_service/version.txt"
                                       overwrite="true"/>
                                 <copy file="${basedir}\startup.bat"
-                                      tofile="${basedir}/target/blg/startup.bat"
+                                      tofile="${basedir}/target/blg_service/startup.bat"
                                       overwrite="true"/>
                             </tasks>
                         </configuration>

@@ -4,15 +4,21 @@ import com.vorxsoft.ieye.proto.*;
 import io.grpc.stub.StreamObserver;
 
 public class VsIAClient extends GrpcClient{
-  private IAAGInfo iaagInfo;
   private VSIAServiceGrpc.VSIAServiceStub stub;
+  private IAAGInfo iaagInfo;
 
   public VsIAClient(String name, String IP, int PORT) {
     super(name, IP, PORT);
+    if(getStub() == null){
+      stub =  VSIAServiceGrpc.newStub(getManagedChannel());
+    }
   }
 
   public VsIAClient(String name, String address) {
     super(name, address);
+    if(getStub() == null){
+      stub =  VSIAServiceGrpc.newStub(getManagedChannel());
+    }
   }
 
   public IAAGInfo getIaagInfo() {
@@ -36,12 +42,15 @@ public class VsIAClient extends GrpcClient{
     super(IP, PORT);
   }
 
+
   public VsIAClient() {
   }
 
   public void init(){
     createChannel();
-    stub =  VSIAServiceGrpc.newStub(getManagedChannel());
+    if(getManagedChannel().isTerminated()){
+      stub =  VSIAServiceGrpc.newStub(getManagedChannel());
+    }
   }
 
   public void sentIACMD(SentIACMDRequest request){

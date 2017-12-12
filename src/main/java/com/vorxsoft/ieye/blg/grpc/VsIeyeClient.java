@@ -6,24 +6,43 @@ import io.grpc.stub.StreamObserver;
 public class VsIeyeClient extends GrpcClient {
   private VsIeyeProtoGrpc.VsIeyeProtoStub stub;
 
-  public VsIeyeClient(String IP, int PORT) {
-    super(IP, PORT);
+  public VsIeyeClient() {
   }
 
-  public VsIeyeClient() {
+  public VsIeyeClient(String IP, int PORT) {
+    super(IP, PORT);
+    if(getStub() == null){
+      stub =  VsIeyeProtoGrpc.newStub(getManagedChannel());
+    }
   }
 
   public VsIeyeClient(String name, String IP, int PORT) {
     super(name, IP, PORT);
+    if(getStub() == null){
+      stub =  VsIeyeProtoGrpc.newStub(getManagedChannel());
+    }
   }
 
   public VsIeyeClient(String name, String address) {
     super(name, address);
+    if(getStub() == null){
+      stub =  VsIeyeProtoGrpc.newStub(getManagedChannel());
+    }
+  }
+
+  public VsIeyeProtoGrpc.VsIeyeProtoStub getStub() {
+    return stub;
+  }
+
+  public void setStub(VsIeyeProtoGrpc.VsIeyeProtoStub stub) {
+    this.stub = stub;
   }
 
   public void init() {
     createChannel();
-    stub = VsIeyeProtoGrpc.newStub(getManagedChannel());
+    if(getStub() == null){
+      stub = VsIeyeProtoGrpc.newStub(getManagedChannel());
+    }
   }
 
   public void reportEvent(ReportEventRequest request) {
