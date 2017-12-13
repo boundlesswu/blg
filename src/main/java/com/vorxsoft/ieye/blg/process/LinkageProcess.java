@@ -182,6 +182,7 @@ public class LinkageProcess implements Runnable {
                 setSResNo(resNo).
                 setNResid(resUtil.getResId(resNo)).
                 setSBusinessID(bussinessId).
+                setEmAct(PTZ_ACT.PTZ_CALL_PRESET).
                 setSPresetNo(presetNo2).build();
         getCmsIeyeClient().pTZPreset(request);
         linkageItem.setHasReLinkage(true);
@@ -272,6 +273,7 @@ public class LinkageProcess implements Runnable {
       PTZPresetRequest request = PTZPresetRequest.newBuilder().setSResNo(resNo).
               setNResid(resUtil.getResId(resNo)).
               setSBusinessID(bussinessId).
+              setEmAct(PTZ_ACT.PTZ_CALL_PRESET).
               setSPresetNo(presetNo1).build();
       getCmsIeyeClient().pTZPreset(request);
       addLinkageItemHashMap(eventId,eventLogId, linkage, bussinessId, false, true, false);
