@@ -61,7 +61,7 @@ public class BLGServerStart implements WatchCallerInterface {
   public static void setLogger(org.apache.log4j.Logger logger) {
     BLGServerStart.logger = logger;
   }
-
+  
   @Override
   public void WatchCaller(Watch.Watcher watch) {
     WatchResponse ret = watch.listen();
