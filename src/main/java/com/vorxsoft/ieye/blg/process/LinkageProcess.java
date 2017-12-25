@@ -2,11 +2,14 @@ package com.vorxsoft.ieye.blg.process;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import com.vorxsoft.ieye.blg.grpc.LogServiceClient;
 import com.vorxsoft.ieye.blg.grpc.VsIeyeClient;
 import com.vorxsoft.ieye.blg.util.Generalid;
 import com.vorxsoft.ieye.blg.util.ResUtil;
 import com.vorxsoft.ieye.blg.util.ResUtilImpl;
 import com.vorxsoft.ieye.proto.*;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 
 import java.sql.Connection;
@@ -23,6 +26,8 @@ public class LinkageProcess implements Runnable {
   VsIeyeClient cmsIeyeClient;
   HashMap<String, LinkageItem> linkageItemHashMap;
   ResUtil resUtil;
+  private static Logger logger = LogManager.getLogger(LinkageProcess.class.getName());
+  private LogServiceClient logServiceClient;
 
   public HashMap<String, LinkageItem> getLinkageItemHashMap() {
     return linkageItemHashMap;
@@ -32,8 +37,23 @@ public class LinkageProcess implements Runnable {
     this.linkageItemHashMap = linkageItemHashMap;
   }
 
+  public static Logger getLogger() {
+    return logger;
+  }
 
-  //HashMap<String,VsIeyeClient>
+  public static void setLogger(Logger logger) {
+    LinkageProcess.logger = logger;
+  }
+
+  public LogServiceClient getLogServiceClient() {
+    return logServiceClient;
+  }
+
+  public void setLogServiceClient(LogServiceClient logServiceClient) {
+    this.logServiceClient = logServiceClient;
+  }
+
+//HashMap<String,VsIeyeClient>
   //Publisher publisher;
 
   public LinkageProcess() {
@@ -107,8 +127,10 @@ public class LinkageProcess implements Runnable {
         }
       } catch (InterruptedException e) {
         e.printStackTrace();
+        getLogger().error(e);
       } catch (Exception e) {
         e.printStackTrace();
+        getLogger().error(e);
       }
     }
   }
@@ -244,11 +266,12 @@ public class LinkageProcess implements Runnable {
   public void processLinkage(Linkage linkage, int eventId,int eventLogId) {
     String type = linkage.getSLinkageType();
     if (type.equals(sLinkageClient)) {
-
+      getLogger().debug("sLinkageClient " + linkage);
     } else if (type.equals(sLinkageWall)) {
 //      arg1	res_no	摄像机资源编号
 //      arg2	res_screen_no	屏幕资源编号
 //      arg3	window	窗口序号
+      getLogger().debug("sLinkageWall"+linkage);
       String resNo = linkage.getSArgs(0);
       String resScreenNo = linkage.getSArgs(1);
       int window = Integer.parseInt(linkage.getSArgs(2));
@@ -265,6 +288,7 @@ public class LinkageProcess implements Runnable {
 //      arg3	preset_no	事件结束返回预置点编号（第二次调用该预置点）
 //      arg4	秒数	持续时间，默认60秒。超过该值调用arg3返回预置点。
 //      rpc PTZPreset (PTZPresetRequest) returns (PTZPresetReply)预置位设置
+      getLogger().debug("sLinkagePreset"+linkage);
       String resNo = linkage.getSArgs(0);
       String presetNo1 = linkage.getSArgs(1);
       String presetNo2 = linkage.getSArgs(2);
@@ -284,6 +308,7 @@ public class LinkageProcess implements Runnable {
 //      arg3	秒数	默认60秒。超过该值停止巡航。
 //      rpc PTZCruise (PTZCruiseRequest) returns (PTZCruiseReply)//巡航设置*************/
 //      rpc PTZCruiseResult (PTZCruiseReply) returns (DefaultReply)  结果
+      getLogger().debug("sLinkageCruise"+linkage);
       String resNo = linkage.getSArgs(0);
       String cruiseNo = linkage.getSArgs(1);
       String bussinessId = Generalid.GetBusinessID();
@@ -297,6 +322,7 @@ public class LinkageProcess implements Runnable {
 //      arg2	0/1	开关量输出通道闭/开
 //      arg3	秒数	默认60秒。超过该值停止输出通道联动
 //      rpc AlarmControl (AlarmControlRequest) returns (DefaultReply)
+      getLogger().debug("sLinkageSio"+linkage);
       String resNo = linkage.getSArgs(0);
       String bussinessId = Generalid.GetBusinessID();
       int nCmd = Integer.parseInt(linkage.getSArgs(2));
@@ -305,11 +331,15 @@ public class LinkageProcess implements Runnable {
       getCmsIeyeClient().alarmControl(request);
       addLinkageItemHashMap(eventId,eventLogId, linkage, bussinessId, false, true, false);
     } else if (type.equals(sLinkageRecord)) {
+      getLogger().debug("sLinkageRecord"+linkage);
     } else if (type.equals(sLinkageSms)) {
+      getLogger().debug("sLinkageSms"+linkage);
     } else if (type.equals(sLinkageSnapshot)) {
+      getLogger().debug("sLinkageSnapshot"+linkage);
     } else if (type.equals(sLinkageEmail)) {
+      getLogger().debug("sLinkageEmail"+linkage);
     } else {
-
+      getLogger().debug("error linage type "+linkage);
     }
   }
 
@@ -340,6 +370,7 @@ public class LinkageProcess implements Runnable {
     Set<String> set = jedis.keys(patterKey);
     if (set.size() == 0) {
       System.out.println("patterKey :" + patterKey + "is not exist");
+      getLogger().debug("patterKey :" + patterKey + "is not exist");
       return null;
     }
     List<ReportLinkageRequest> reportLinkageRequests = new ArrayList<>();
@@ -348,6 +379,7 @@ public class LinkageProcess implements Runnable {
       String keyStr = it.next();
       String s = getJedis().hget(keyStr, "req");
       if (s == null || s.length() == 0) {
+        getLogger().debug("get request is null");
         continue;
       }
 
@@ -359,6 +391,7 @@ public class LinkageProcess implements Runnable {
         getJedis().del(keyStr);
       } catch (InvalidProtocolBufferException e) {
         e.printStackTrace();
+        getLogger().error(e);
       }
     }
     return reportLinkageRequests;

@@ -3,6 +3,7 @@ package com.vorxsoft.ieye.blg;
 import com.coreos.jetcd.Watch;
 import com.coreos.jetcd.watch.WatchEvent;
 import com.coreos.jetcd.watch.WatchResponse;
+import com.vorxsoft.ieye.blg.grpc.LogServiceClient;
 import com.vorxsoft.ieye.blg.grpc.VsIeyeClient;
 import com.vorxsoft.ieye.blg.process.LinkageProcess;
 import com.vorxsoft.ieye.microservice.MicroService;
@@ -10,6 +11,8 @@ import com.vorxsoft.ieye.microservice.MicroServiceImpl;
 import com.vorxsoft.ieye.microservice.WatchCallerInterface;
 import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -28,6 +31,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.vorxsoft.ieye.proto.VSLogLevel.VSLogLevelInfo;
+
+
 public class BLGServerStart implements WatchCallerInterface {
   private static String serviceName = "server_blg";
   private static String hostip;
@@ -37,12 +43,30 @@ public class BLGServerStart implements WatchCallerInterface {
   private String activemqIp;
   private int activemqPort;
   private String redisName;
+  private static Logger logger = LogManager.getLogger(BLGServerStart.class.getName());
+  private LogServiceClient logServiceClient;
 
+  public LogServiceClient getLogServiceClient() {
+    return logServiceClient;
+  }
+
+  public void setLogServiceClient(LogServiceClient logServiceClient) {
+    this.logServiceClient = logServiceClient;
+  }
+
+  public static org.apache.log4j.Logger getLogger() {
+    return logger;
+  }
+
+  public static void setLogger(org.apache.log4j.Logger logger) {
+    BLGServerStart.logger = logger;
+  }
 
   @Override
   public void WatchCaller(Watch.Watcher watch) {
     WatchResponse ret = watch.listen();
-    System.out.println("watcher response  " + watch.listen());
+    System.out.println("watcher response  " + ret);
+    getLogger().info("watcher response  "+ret);
     for (int i = 0; i < ret.getEvents().size(); i++) {
       WatchEvent a = ret.getEvents().get(i);
       String key = a.getKeyValue().getKey().toString();
@@ -115,6 +139,7 @@ public class BLGServerStart implements WatchCallerInterface {
     System.out.println("db url :" + dbUrl);
     Class.forName(driverClassName);
     conn = DriverManager.getConnection(dbUrl, dbUser, dbPasswd);
+    getLogger().info("successful db init " + dbUrl+dbUser+dbPasswd);
     //st = conn.createStatement();
   }
 
@@ -130,8 +155,10 @@ public class BLGServerStart implements WatchCallerInterface {
       @Override
       public void run() {
         System.err.println("*** shutting down gRPC server since JVM is shutting down");
+        getLogger().error("*** shutting down gRPC server since JVM is shutting down");
         BLGServerStart.this.stop();
         System.err.println("*** server shut down");
+        getLogger().error("*** server shut down");
       }
     });
   }
@@ -147,8 +174,10 @@ public class BLGServerStart implements WatchCallerInterface {
       server.awaitTermination(2, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
       e.printStackTrace();
+      getLogger().error(e);
     } catch (SQLException e) {
       e.printStackTrace();
+      getLogger().error(e);
     }
   }
 
@@ -165,11 +194,27 @@ public class BLGServerStart implements WatchCallerInterface {
     myservice.RegisteWithHB(serviceName, hostip, PORT, ttl);
     myservice.SetWatcher("server_", true);
 
+    String logAddress = myservice.Resolve("server_log");
+    if(logAddress == null){
+      System.out.println("cannot resolve log server  address");
+      blgServerStart.getLogger().warn("cannot resolve log server  address");
+    }else{
+      System.out.println("successful resolve log server  address:" + logAddress);
+      blgServerStart.getLogger().info("successful resolve log server  address:" + logAddress);
+      blgServerStart.setLogServiceClient(new LogServiceClient("log",logAddress));
+      blgServerStart.getLogServiceClient().setHostNameIp(hostip);
+      blgServerStart.getLogServiceClient().setpName(serviceName);
+      String logContent = "successful resolve log server  address:" + logAddress;
+      blgServerStart.getLogServiceClient().sentVSLog(logContent,VSLogLevelInfo);
+    }
+
     String cmsAddress = myservice.Resolve("server_cms");
     if (cmsAddress == null) {
       System.out.println("cannot resolve cms server  address");
+      getLogger().warn("cannot resolve cms server  address");
     } else {
       System.out.println("successful resolve cms server  address:" + cmsAddress);
+      getLogger().info("successful resolve cms server  address:" + cmsAddress);
       blgServerStart.setCmsClient(new VsIeyeClient("cms", cmsAddress));
     }
 
