@@ -8,8 +8,8 @@ import com.vorxsoft.ieye.blg.util.Generalid;
 import com.vorxsoft.ieye.blg.util.ResUtil;
 import com.vorxsoft.ieye.blg.util.ResUtilImpl;
 import com.vorxsoft.ieye.proto.*;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import redis.clients.jedis.Jedis;
 
 import java.sql.Connection;

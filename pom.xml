@@ -77,6 +77,11 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>2.5</version>
         </dependency>
@@ -109,11 +114,6 @@
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>9.1-901.jdbc4</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vorxsoft.ieye</groupId>
-            <artifactId>event_service</artifactId>
-            <version>4.0.1.2</version>
         </dependency>
         <!--<dependency>-->
         <!--<groupId>com.aliyun</groupId>-->

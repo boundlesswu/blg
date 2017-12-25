@@ -11,8 +11,8 @@ import com.vorxsoft.ieye.microservice.MicroServiceImpl;
 import com.vorxsoft.ieye.microservice.WatchCallerInterface;
 import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -54,11 +54,11 @@ public class BLGServerStart implements WatchCallerInterface {
     this.logServiceClient = logServiceClient;
   }
 
-  public static org.apache.log4j.Logger getLogger() {
+  public static Logger getLogger() {
     return logger;
   }
 
-  public static void setLogger(org.apache.log4j.Logger logger) {
+  public static void setLogger(Logger logger) {
     BLGServerStart.logger = logger;
   }
 
