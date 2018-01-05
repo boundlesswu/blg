@@ -391,7 +391,7 @@ public class LinkageProcess implements Runnable {
         getJedis().del(keyStr);
       } catch (InvalidProtocolBufferException e) {
         e.printStackTrace();
-        getLogger().error(e);
+        getLogger().error(e.getMessage(), e);
       }
     }
     return reportLinkageRequests;

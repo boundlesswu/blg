@@ -174,10 +174,10 @@ public class BLGServerStart implements WatchCallerInterface {
       server.awaitTermination(2, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
       e.printStackTrace();
-      getLogger().error(e);
+      getLogger().error(e.getMessage(), e);
     } catch (SQLException e) {
       e.printStackTrace();
-      getLogger().error(e);
+      getLogger().error(e.getMessage(), e);
     }
   }
 
