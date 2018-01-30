@@ -6,7 +6,7 @@
 
     <groupId>com.vorxsoft.ieye</groupId>
     <artifactId>blg</artifactId>
-    <version>4.0.2.2</version>
+    <version>4.0.3.1</version>
     <properties>
         <grpc.version>1.4.0</grpc.version>
     </properties>
