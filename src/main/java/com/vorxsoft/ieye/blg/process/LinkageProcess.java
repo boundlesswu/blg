@@ -349,6 +349,12 @@ public class LinkageProcess implements Runnable {
       addLinkageItemHashMap(eventId,eventLogId, linkage, bussinessId, false, true, false);
     } else if (type.equals(sLinkageRecord)) {
       getLogger().debug("sLinkageRecord"+linkage);
+      String bussinessId = Generalid.GetBusinessID();
+      String res_no = linkage.getSArgs(0);
+      RecordControlRequest request =  RecordControlRequest.newBuilder().setSBusinessID(bussinessId).
+                                      setSResNo(res_no).setBStart(true).setNRecType(4).setNStreamType(1).build();
+      getCmsIeyeClient().recordControl(request);
+      addLinkageItemHashMap(eventId,eventLogId, linkage, bussinessId, false, true, false);
     } else if (type.equals(sLinkageSms)) {
       getLogger().debug("sLinkageSms"+linkage);
       String bussinessId = Generalid.GetBusinessID();

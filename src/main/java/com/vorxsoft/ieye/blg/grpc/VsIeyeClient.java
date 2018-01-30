@@ -186,4 +186,20 @@ public class VsIeyeClient extends GrpcClient {
     stub.alarmControl(request,streamObserver);
   }
 
+  public void recordControl(RecordControlRequest request ){
+    StreamObserver<DefaultReply> streamObserver = new StreamObserver<DefaultReply>(){
+      @Override
+      public void onNext(DefaultReply defaultReply) {
+        return;
+      }
+      @Override
+      public void onError(Throwable throwable) {
+          System.out.println("recordControl onError" + throwable);
+      }
+      @Override
+      public void onCompleted() {
+      }
+    };
+    stub.recordControl(request,streamObserver);
+  }
 }
