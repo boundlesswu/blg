@@ -6,6 +6,9 @@ import com.coreos.jetcd.watch.WatchResponse;
 import com.vorxsoft.ieye.blg.grpc.LogServiceClient;
 import com.vorxsoft.ieye.blg.grpc.VsIeyeClient;
 import com.vorxsoft.ieye.blg.process.LinkageProcess;
+import com.vorxsoft.ieye.blg.util.EmailUtil;
+import com.vorxsoft.ieye.blg.util.RedisUtil;
+import com.vorxsoft.ieye.blg.util.SmsUtil;
 import com.vorxsoft.ieye.microservice.MicroService;
 import com.vorxsoft.ieye.microservice.MicroServiceImpl;
 import com.vorxsoft.ieye.microservice.WatchCallerInterface;
@@ -18,7 +21,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import redis.clients.jedis.Jedis;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +47,19 @@ public class BLGServerStart implements WatchCallerInterface {
   private String redisName;
   private static Logger logger = LogManager.getLogger(BLGServerStart.class.getName());
   private LogServiceClient logServiceClient;
+  private String emailProtocol;
+  private String emailServer;
+  private String emailDomain;
+  private String emailPort;
+  private String emailUserName;
+  private String emailPassword;
+  private String aliyunSmsProduct;
+  private String aliyunSmsDomain;
+  private String aliyunSmsAccessKeyId;
+  private String aliyunSmsAccessKeySecret;
+  private String aliyunSmsTemplateCode;
+  private String aliyunSmsSignName;
+  private RedisUtil redisUtil;
 
   public LogServiceClient getLogServiceClient() {
     return logServiceClient;
@@ -124,15 +139,41 @@ public class BLGServerStart implements WatchCallerInterface {
   private static String driverClassName;
   private static String dbUser;
   private static String dbPasswd;
-  private Jedis jedis;
+  //private Jedis jedis;
   private VsIeyeClient cmsClient;
   private final String cfgFileName = "blg_service.xml";
   private InputStream cfgFile;
 
+  private SmsUtil smsUtil;
+  private EmailUtil emailUtil;
+
+  public RedisUtil getRedisUtil() {
+    return redisUtil;
+  }
+
+  public void setRedisUtil(RedisUtil redisUtil) {
+    this.redisUtil = redisUtil;
+  }
+
+  public SmsUtil getSmsUtil() {
+    return smsUtil;
+  }
+
+  public void setSmsUtil(SmsUtil smsUtil) {
+    this.smsUtil = smsUtil;
+  }
+
+  public EmailUtil getEmailUtil() {
+    return emailUtil;
+  }
+
+  public void setEmailUtil(EmailUtil emailUtil) {
+    this.emailUtil = emailUtil;
+  }
+
   public void setCmsClient(VsIeyeClient cmsClient) {
     this.cmsClient = cmsClient;
   }
-
 
   public void dbInit() throws SQLException, ClassNotFoundException {
     dbUrl = "jdbc:" + dbname + "://" + dbAddress;
@@ -144,11 +185,12 @@ public class BLGServerStart implements WatchCallerInterface {
   }
 
   public void redisInit() {
-    jedis = new Jedis(redisIp, redisPort);
+    redisUtil = new RedisUtil(redisIp,redisPort);
+    //jedis = new Jedis(redisIp, redisPort);
   }
 
   private void start() throws Exception {
-    server = NettyServerBuilder.forPort(PORT).addService(new BLGServer(redisIp, redisPort).bindService()).build();
+    server = NettyServerBuilder.forPort(PORT).addService(new BLGServer(redisUtil).bindService()).build();
     server.start();
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -169,7 +211,7 @@ public class BLGServerStart implements WatchCallerInterface {
 
   private void stop() {
     try {
-      jedis.close();
+      //jedis.close();
       conn.close();
       server.awaitTermination(2, TimeUnit.SECONDS);
     } catch (InterruptedException e) {
@@ -185,11 +227,16 @@ public class BLGServerStart implements WatchCallerInterface {
     final BLGServerStart blgServerStart = new BLGServerStart();
 
     blgServerStart.cfgInit();
+
+    blgServerStart.setEmailUtil();
+    blgServerStart.setSmsUtil();
+
+    blgServerStart.redisInit();
+    blgServerStart.dbInit();
+
     MicroService myservice = new MicroServiceImpl();
     myservice.init(registerCenterAddress, blgServerStart);
     blgServerStart.start();
-    blgServerStart.redisInit();
-    blgServerStart.dbInit();
 
     myservice.RegisteWithHB(serviceName, hostip, PORT, ttl);
     myservice.SetWatcher("server_", true);
@@ -223,7 +270,9 @@ public class BLGServerStart implements WatchCallerInterface {
     linkageProcess.setName("linkageProcess");
 
     linkageProcess.dbInit(dbname, dbAddress, driverClassName, dbUser, dbPasswd);
-    linkageProcess.redisInit(redisIp, redisPort);
+    linkageProcess.setRedisUtil(blgServerStart.getRedisUtil());
+    linkageProcess.setEmailUtil(blgServerStart.getEmailUtil());
+    linkageProcess.setSmsUtil(blgServerStart.getSmsUtil());
 
     new Thread(linkageProcess).start();
 
@@ -315,6 +364,35 @@ public class BLGServerStart implements WatchCallerInterface {
             else if (lname.equals("port"))
               activemqPort = Integer.parseInt(lvalue);
           }
+          if (tname.equals("email")) {
+            if (lname.equals("protocol"))
+              emailProtocol = lvalue;
+            else if (lname.equals("server"))
+              emailServer = lvalue;
+            else if (lname.equals("domain"))
+              emailDomain = lvalue;
+            else if (lname.equals("port"))
+              emailPort = lvalue;
+            else if (lname.equals("userName"))
+              emailUserName = lvalue;
+            else if (lname.equals("password"))
+              emailPassword = lvalue;
+          }
+          if (tname.equals("aliyunSms")) {
+            if (lname.equals("product"))
+              aliyunSmsProduct = lvalue;
+            else if (lname.equals("domain"))
+              aliyunSmsDomain = lvalue;
+            else if (lname.equals("accessKeyId"))
+              aliyunSmsAccessKeyId = lvalue;
+            else if (lname.equals("accessKeySecret"))
+              aliyunSmsAccessKeySecret = lvalue;
+            else if (lname.equals("templateCode"))
+              aliyunSmsTemplateCode = lvalue;
+            else if (lname.equals("signName"))
+              aliyunSmsSignName = lvalue;
+
+          }
         }
         //System.out.println("=====结束遍历某一本书=====");
       }
@@ -322,5 +400,14 @@ public class BLGServerStart implements WatchCallerInterface {
       e.printStackTrace();
     }
   }
+
+  public void setEmailUtil(){
+    setEmailUtil(new EmailUtil(emailProtocol,emailServer,emailDomain,emailPort,emailUserName,emailPassword));
+  }
+
+  public void setSmsUtil(){
+    setSmsUtil(new  SmsUtil(aliyunSmsProduct,aliyunSmsDomain,aliyunSmsAccessKeyId,aliyunSmsAccessKeySecret,aliyunSmsSignName,aliyunSmsTemplateCode));
+  }
+
 
 }

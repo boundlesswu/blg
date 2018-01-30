@@ -6,7 +6,7 @@
         <hostip>192.168.20.134</hostip>
         <port>60601</port>
         <ttl>60</ttl>
-    </info>>
+    </info>
     <database>
         <name>postgresql</name>
         <address>192.168.20.222:5432/vs_ieye</address>
@@ -27,5 +27,21 @@
         <name>activemq1</name>
         <ip>127.0.0.1</ip>
         <port>61616</port>
-    </activemq>>
+    </activemq>
+    <email>
+        <protocol>SMTP</protocol>
+        <server>smtp.163.com</server>
+        <domain>163.com</domain>
+        <port>25</port>
+        <userName>18611813097</userName>
+        <password>vorx123</password>
+    </email>
+    <aliyunSms>
+            <product>Dysmsapi</product>
+            <domain>dysmsapi.aliyuncs.com</domain>
+            <accessKeyId>LTAIEctvEq6hfNqb</accessKeyId>
+            <accessKeySecret>o49v0PVHSIt5ZMCqGHPKQ1dDMJZnfS</accessKeySecret>
+            <templateCode>SMS_123735642</templateCode>
+            <signName>蛙视</signName>
+    </aliyunSms>
 </microservice>

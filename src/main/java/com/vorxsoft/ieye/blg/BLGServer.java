@@ -3,27 +3,40 @@ package com.vorxsoft.ieye.blg;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.vorxsoft.ieye.blg.process.LinkageItem;
+import com.vorxsoft.ieye.blg.util.RedisUtil;
 import com.vorxsoft.ieye.proto.*;
 import io.grpc.stub.StreamObserver;
-import redis.clients.jedis.Jedis;
 
 import java.util.HashMap;
 
 public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
-  private Jedis jedis;
+  public RedisUtil getRedisUtil() {
+    return redisUtil;
+  }
+
+  public void setRedisUtil(RedisUtil redisUtil) {
+    this.redisUtil = redisUtil;
+  }
+
+  private RedisUtil redisUtil;
+  //private Jedis jedis;
   HashMap<String, LinkageItem> linkageItemHashMap;
 
-  BLGServer(String ip, int port) {
-    jedis = new Jedis(ip, port);
+  BLGServer(RedisUtil redisUtil) {
+    setRedisUtil(redisUtil);
   }
 
-  public Jedis getJedis() {
-    return jedis;
-  }
-
-  public void setJedis(Jedis jedis) {
-    this.jedis = jedis;
-  }
+//  BLGServer(String ip, int port) {
+//    jedis = new Jedis(ip, port);
+//  }
+//
+//  public Jedis getJedis() {
+//    return jedis;
+//  }
+//
+//  public void setJedis(Jedis jedis) {
+//    this.jedis = jedis;
+//  }
 
   public HashMap<String, LinkageItem> getLinkageItemHashMap() {
     return linkageItemHashMap;
@@ -97,7 +110,7 @@ public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
         e.printStackTrace();
       }
       //System.out.println("s");
-      jedis.hset("eventWithLinkage_" + String.valueOf(System.currentTimeMillis()), "req", s);
+      redisUtil.hset("eventWithLinkage_" + String.valueOf(System.currentTimeMillis()), "req", s);
     }
 //    for (int i = 0; i < req.getEventWithLinkagesCount(); i++) {
 //      EventWithLinkage eventWithLinkage = req.getEventWithLinkages(i);

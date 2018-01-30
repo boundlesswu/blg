@@ -1,16 +1,15 @@
 package com.vorxsoft.ieye.blg.process;
 
+import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
+import com.aliyuncs.exceptions.ClientException;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.vorxsoft.ieye.blg.grpc.LogServiceClient;
 import com.vorxsoft.ieye.blg.grpc.VsIeyeClient;
-import com.vorxsoft.ieye.blg.util.Generalid;
-import com.vorxsoft.ieye.blg.util.ResUtil;
-import com.vorxsoft.ieye.blg.util.ResUtilImpl;
+import com.vorxsoft.ieye.blg.util.*;
 import com.vorxsoft.ieye.proto.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import redis.clients.jedis.Jedis;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -21,13 +20,39 @@ import static com.vorxsoft.ieye.blg.util.Constant.*;
 
 public class LinkageProcess implements Runnable {
   private String name;
-  private Jedis jedis;
+  //private Jedis jedis;
+  private RedisUtil redisUtil;
   private Connection conn;
   VsIeyeClient cmsIeyeClient;
   HashMap<String, LinkageItem> linkageItemHashMap;
-  ResUtil resUtil;
+  private ResUtil resUtil;
+  private SmsUtil smsUtil;
+  private EmailUtil emailUtil;
   private static Logger logger = LogManager.getLogger(LinkageProcess.class.getName());
   private LogServiceClient logServiceClient;
+
+  public RedisUtil getRedisUtil() {
+    return redisUtil;
+  }
+
+  public void setRedisUtil(RedisUtil redisUtil) {
+    this.redisUtil = redisUtil;
+  }
+
+  public SmsUtil getSmsUtil() {
+    return smsUtil;
+  }
+
+  public void setSmsUtil(SmsUtil smsUtil) {
+    this.smsUtil = smsUtil;
+  }
+
+  public EmailUtil getEmailUtil() {
+    return emailUtil;
+  }
+  public void setEmailUtil(EmailUtil emailUtil) {
+    this.emailUtil = emailUtil;
+  }
 
   public HashMap<String, LinkageItem> getLinkageItemHashMap() {
     return linkageItemHashMap;
@@ -72,14 +97,6 @@ public class LinkageProcess implements Runnable {
     this.name = name;
   }
 
-  public Jedis getJedis() {
-    return jedis;
-  }
-
-  public void setJedis(Jedis jedis) {
-    this.jedis = jedis;
-  }
-
   public Connection getConn() {
     return conn;
   }
@@ -106,12 +123,6 @@ public class LinkageProcess implements Runnable {
     resUtil = new ResUtilImpl();
     resUtil.init(conn);
   }
-
-  public void redisInit(String redisIP, int redisPort) {
-    jedis = new Jedis(redisIP, redisPort);
-  }
-
-
 
   @Override
   public void run() {
@@ -262,8 +273,14 @@ public class LinkageProcess implements Runnable {
       setLinkageItemHashMap(new HashMap<>());
     getLinkageItemHashMap().put(bussinessId, linkageItem);
   }
-
-  public void processLinkage(Linkage linkage, int eventId,int eventLogId) {
+  public void processLinkage(Linkage linkage, Events event){
+    int eventId = event.getNEventID();
+    int eventLogId = event.getNEventlogID();
+    String eventName = event.getSEventName();
+    String happenTime = event.getSHappentime();
+    processLinkage(linkage,eventId,eventLogId,eventName,happenTime);
+  }
+  public void processLinkage(Linkage linkage, int eventId,int eventLogId, String eventName, String happenTime) {
     String type = linkage.getSLinkageType();
     if (type.equals(sLinkageClient)) {
       getLogger().debug("sLinkageClient " + linkage);
@@ -334,10 +351,32 @@ public class LinkageProcess implements Runnable {
       getLogger().debug("sLinkageRecord"+linkage);
     } else if (type.equals(sLinkageSms)) {
       getLogger().debug("sLinkageSms"+linkage);
+      String bussinessId = Generalid.GetBusinessID();
+      String desc = linkage.getSArgs(0);
+      String phoneNum = linkage.getSArgs(1);
+      try {
+        SendSmsResponse response = smsUtil.sendSms(phoneNum,happenTime,eventName,desc);
+        if(response.getCode().equals("OK")){
+          getLogger().debug("success to send sms (eventName : " + eventName + "desc : "+desc +") to "+ phoneNum);
+        }else{
+          getLogger().error("failed to send sms (eventName : " + eventName + "desc : "+desc +") to "+ phoneNum+",because :" + response.getCode() + "  " + response.getMessage());
+        }
+      } catch (ClientException e) {
+        e.printStackTrace();
+        getLogger().error(e.getMessage(), e);
+      }finally {
+        addLinkageItemHashMap(eventId,eventLogId, linkage, bussinessId, false, false, false);
+      }
     } else if (type.equals(sLinkageSnapshot)) {
       getLogger().debug("sLinkageSnapshot"+linkage);
     } else if (type.equals(sLinkageEmail)) {
       getLogger().debug("sLinkageEmail"+linkage);
+      String bussinessId = Generalid.GetBusinessID();
+      String subject = linkage.getSArgs(0);
+      String content = linkage.getSArgs(1) + "\n"+ eventName+"@"+happenTime;
+      String sendto = linkage.getSArgs(2);
+      emailUtil.sendMail(sendto,subject,content);
+      addLinkageItemHashMap(eventId,eventLogId, linkage, bussinessId, false, false, false);
     } else {
       getLogger().debug("error linage type "+linkage);
     }
@@ -353,11 +392,11 @@ public class LinkageProcess implements Runnable {
       for (int j = 0; j < req.getEventWithLinkagesCount(); j++) {
         EventWithLinkage eventWithLinkage = req.getEventWithLinkages(j);
         Events event = eventWithLinkage.getEvent();
-        int eventId = event.getNEventID();
-        int eventLogId = event.getNEventlogID();
+//        int eventId = event.getNEventID();
+//        int eventLogId = event.getNEventlogID();
         for (int k = 0; k < eventWithLinkage.getLinkagesCount(); k++) {
           Linkage linkage = eventWithLinkage.getLinkages(k);
-          processLinkage(linkage, eventId,eventLogId);
+          processLinkage(linkage, event);
           //if(linkage.getSLinkageType().equals())
 
         }
@@ -367,17 +406,17 @@ public class LinkageProcess implements Runnable {
 
   public List<ReportLinkageRequest> getReportLinkageRequest() throws com.googlecode.protobuf.format.JsonFormat.ParseException {
     String patterKey = "eventWithLinkage_*";
-    Set<String> set = jedis.keys(patterKey);
+    Set<String> set = redisUtil.keys(patterKey);
     if (set.size() == 0) {
-      System.out.println("patterKey :" + patterKey + "is not exist");
-      getLogger().debug("patterKey :" + patterKey + "is not exist");
+      //System.out.println("patterKey :" + patterKey + "is not exist");
+      //getLogger().debug("patterKey :" + patterKey + "is not exist");
       return null;
     }
     List<ReportLinkageRequest> reportLinkageRequests = new ArrayList<>();
     Iterator<String> it = set.iterator();
     while (it.hasNext()) {
       String keyStr = it.next();
-      String s = getJedis().hget(keyStr, "req");
+      String s = redisUtil.hget(keyStr, "req");
       if (s == null || s.length() == 0) {
         getLogger().debug("get request is null");
         continue;
@@ -388,7 +427,7 @@ public class LinkageProcess implements Runnable {
         JsonFormat.parser().merge(s, builder);
         ReportLinkageRequest req = builder.build();
         reportLinkageRequests.add(req);
-        getJedis().del(keyStr);
+        redisUtil.del(keyStr);
       } catch (InvalidProtocolBufferException e) {
         e.printStackTrace();
         getLogger().error(e.getMessage(), e);
