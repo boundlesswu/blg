@@ -402,12 +402,10 @@ public class BLGServerStart implements WatchCallerInterface {
   }
 
   public void setEmailUtil(){
-    setEmailUtil(new EmailUtil(emailProtocol,emailServer,emailDomain,emailPort,emailUserName,emailPassword));
+    setEmailUtil(new EmailUtil(emailProtocol,emailDomain,emailServer,emailPort,emailUserName,emailPassword));
   }
 
   public void setSmsUtil(){
     setSmsUtil(new  SmsUtil(aliyunSmsProduct,aliyunSmsDomain,aliyunSmsAccessKeyId,aliyunSmsAccessKeySecret,aliyunSmsSignName,aliyunSmsTemplateCode));
   }
-
-
 }
