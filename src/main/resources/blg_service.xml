@@ -20,7 +20,7 @@
     </registerCenter>
     <redis>
         <name>redis1</name>
-        <ip>192.168.20.251</ip>
+        <ip>127.0.0.1</ip>
         <port>6379</port>
     </redis>
     <activemq>

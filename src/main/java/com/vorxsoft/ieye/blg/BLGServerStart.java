@@ -6,6 +6,7 @@ import com.coreos.jetcd.watch.WatchResponse;
 import com.vorxsoft.ieye.blg.grpc.LogServiceClient;
 import com.vorxsoft.ieye.blg.grpc.VsIeyeClient;
 import com.vorxsoft.ieye.blg.process.LinkageProcess;
+import com.vorxsoft.ieye.blg.util.ConfigReadUtils;
 import com.vorxsoft.ieye.blg.util.EmailUtil;
 import com.vorxsoft.ieye.blg.util.RedisUtil;
 import com.vorxsoft.ieye.blg.util.SmsUtil;
@@ -16,11 +17,6 @@ import io.grpc.Server;
 import io.grpc.netty.NettyServerBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dom4j.Attribute;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,8 +25,6 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.vorxsoft.ieye.proto.VSLogLevel.VSLogLevelInfo;
@@ -81,7 +75,7 @@ public class BLGServerStart implements WatchCallerInterface {
   public void WatchCaller(Watch.Watcher watch) {
     WatchResponse ret = watch.listen();
     System.out.println("watcher response  " + ret);
-    getLogger().info("watcher response  "+ret);
+    getLogger().info("watcher response  " + ret);
     for (int i = 0; i < ret.getEvents().size(); i++) {
       WatchEvent a = ret.getEvents().get(i);
       String key = a.getKeyValue().getKey().toString();
@@ -180,12 +174,12 @@ public class BLGServerStart implements WatchCallerInterface {
     System.out.println("db url :" + dbUrl);
     Class.forName(driverClassName);
     conn = DriverManager.getConnection(dbUrl, dbUser, dbPasswd);
-    getLogger().info("successful db init " + dbUrl+dbUser+dbPasswd);
+    getLogger().info("successful db init " + dbUrl + dbUser + dbPasswd);
     //st = conn.createStatement();
   }
 
   public void redisInit() {
-    redisUtil = new RedisUtil(redisIp,redisPort);
+    redisUtil = new RedisUtil(redisIp, redisPort);
     //jedis = new Jedis(redisIp, redisPort);
   }
 
@@ -242,17 +236,17 @@ public class BLGServerStart implements WatchCallerInterface {
     myservice.SetWatcher("server_", true);
 
     String logAddress = myservice.Resolve("server_log");
-    if(logAddress == null){
+    if (logAddress == null) {
       System.out.println("cannot resolve log server  address");
       blgServerStart.getLogger().warn("cannot resolve log server  address");
-    }else{
+    } else {
       System.out.println("successful resolve log server  address:" + logAddress);
       blgServerStart.getLogger().info("successful resolve log server  address:" + logAddress);
-      blgServerStart.setLogServiceClient(new LogServiceClient("log",logAddress));
+      blgServerStart.setLogServiceClient(new LogServiceClient("log", logAddress));
       blgServerStart.getLogServiceClient().setHostNameIp(hostip);
       blgServerStart.getLogServiceClient().setpName(serviceName);
       String logContent = "successful resolve log server  address:" + logAddress;
-      blgServerStart.getLogServiceClient().sentVSLog(logContent,VSLogLevelInfo);
+      blgServerStart.getLogServiceClient().sentVSLog(logContent, VSLogLevelInfo);
     }
 
     String cmsAddress = myservice.Resolve("server_cms");
@@ -289,123 +283,43 @@ public class BLGServerStart implements WatchCallerInterface {
   }
 
   public void cfgInit() throws FileNotFoundException {
-    // 解析books.xml文件
-    // 创建SAXReader的对象reader
-    getConfigPath();
-    SAXReader reader = new SAXReader();
-    try {
-      System.out.println("cfg file is:" + cfgFile);
-      // 通过reader对象的read方法加载books.xml文件,获取docuemnt对象。
-      //Document document = reader.read(new File(cfgFile));
-      Document document = reader.read(cfgFile);
-      // 通过document对象获取根节点bookstore
-      Element bookStore = document.getRootElement();
-      // 通过element对象的elementIterator方法获取迭代器
-      Iterator it = bookStore.elementIterator();
-      // 遍历迭代器，获取根节点中的信息（书籍）
-      while (it.hasNext()) {
-        //System.out.println("=====开始遍历某一本书=====");
-        Element cfg = (Element) it.next();
-        // 获取book的属性名以及 属性值
-        List<Attribute> bookAttrs = cfg.attributes();
-        System.out.println("cfgname :" + cfg.getName());
-        for (Attribute attr : bookAttrs) {
-          //System.out.println("属性名：" + attr.getName() + "--属性值：" + attr.getValue());
-        }
-        String tname = cfg.getName();
-        //解析子节点的信息
-        Iterator itt = cfg.elementIterator();
-        while (itt.hasNext()) {
-          Element bookChild = (Element) itt.next();
-          String lname = bookChild.getName();
-          String lvalue = bookChild.getStringValue();
-          //System.out.println("节点名：" + bookChild.getName() + "--节点值：" + bookChild.getStringValue());
-          if (tname.equals("info")) {
-            if (lname.equals("hostip"))
-              hostip = lvalue;
-            else if (lname.equals("port"))
-              PORT = Integer.parseInt(lvalue);
-            else if (lname.equals("name"))
-              serviceName = lvalue;
-            else if (lname.equals("ttl"))
-              ttl = Integer.parseInt(lvalue);
-          }
-          if (tname.equals("database")) {
-            if (lname.equals("name"))
-              dbname = lvalue;
-            else if (lname.equals("address"))
-              dbAddress = lvalue;
-            else if (lname.equals("user"))
-              dbUser = lvalue;
-            else if (lname.equals("passwd"))
-              dbPasswd = lvalue;
-            else if (lname.equals("driverClassName"))
-              driverClassName = lvalue;
-          }
-          if (tname.equals("registerCenter")) {
-            if (lname.equals("name"))
-              registerCenterName = lvalue;
-            else if (lname.equals("address"))
-              registerCenterAddress = lvalue;
-          }
-          if (tname.equals("redis")) {
-            if (lname.equals("name"))
-              redisName = lvalue;
-            else if (lname.equals("ip"))
-              redisIp = lvalue;
-            else if (lname.equals("port"))
-              redisPort = Integer.parseInt(lvalue);
-          }
-          if (tname.equals("activemq")) {
-            if (lname.equals("name"))
-              activemqName = lvalue;
-            else if (lname.equals("ip"))
-              activemqIp = lvalue;
-            else if (lname.equals("port"))
-              activemqPort = Integer.parseInt(lvalue);
-          }
-          if (tname.equals("email")) {
-            if (lname.equals("protocol"))
-              emailProtocol = lvalue;
-            else if (lname.equals("server"))
-              emailServer = lvalue;
-            else if (lname.equals("domain"))
-              emailDomain = lvalue;
-            else if (lname.equals("port"))
-              emailPort = lvalue;
-            else if (lname.equals("userName"))
-              emailUserName = lvalue;
-            else if (lname.equals("password"))
-              emailPassword = lvalue;
-          }
-          if (tname.equals("aliyunSms")) {
-            if (lname.equals("product"))
-              aliyunSmsProduct = lvalue;
-            else if (lname.equals("domain"))
-              aliyunSmsDomain = lvalue;
-            else if (lname.equals("accessKeyId"))
-              aliyunSmsAccessKeyId = lvalue;
-            else if (lname.equals("accessKeySecret"))
-              aliyunSmsAccessKeySecret = lvalue;
-            else if (lname.equals("templateCode"))
-              aliyunSmsTemplateCode = lvalue;
-            else if (lname.equals("signName"))
-              aliyunSmsSignName = lvalue;
+    ConfigReadUtils configReadUtils = new ConfigReadUtils();
+    configReadUtils.cfgInit();
+    hostip = configReadUtils.getHostip();
+    PORT = configReadUtils.getBlgPort();
+    ttl = configReadUtils.getTtl();
+    registerCenterAddress = configReadUtils.getRegisterCenterAddress();
+    dbname = configReadUtils.getDbname();
+    dbUser = configReadUtils.getDbUser();
+    dbPasswd = configReadUtils.getDbPasswd();
+    driverClassName = configReadUtils.getDriverClassName();
+    dbAddress = configReadUtils.getDbAddress();
+    redisName = configReadUtils.getRedisName();
+    redisIp = configReadUtils.getRedisIP();
+    redisPort = configReadUtils.getRedisPort();
+    activemqName = configReadUtils.getActivemqName();
+    activemqIp = configReadUtils.getActivemqIp();
+    activemqPort = configReadUtils.getActivemqPort();
 
-          }
-        }
-        //System.out.println("=====结束遍历某一本书=====");
-      }
-    } catch (DocumentException e) {
-      e.printStackTrace();
-    }
+    emailProtocol = configReadUtils.getEmailProtocol();
+    emailServer = configReadUtils.getEmailServer();
+    emailDomain = configReadUtils.getEmailDomain();
+    emailPort = configReadUtils.getEmailPort();
+    emailUserName = configReadUtils.getEmailUserName();
+    emailPassword = configReadUtils.getEmailPassword();
+    aliyunSmsProduct = configReadUtils.getAliyunSmsProduct();
+    aliyunSmsDomain = configReadUtils.getAliyunSmsDomain();
+    aliyunSmsAccessKeyId = configReadUtils.getAliyunSmsAccessKeyId();
+    aliyunSmsAccessKeySecret = configReadUtils.getAliyunSmsAccessKeySecret();
+    aliyunSmsTemplateCode = configReadUtils.getAliyunSmsTemplateCode();
+    aliyunSmsSignName = configReadUtils.getAliyunSmsSignName();
   }
 
-  public void setEmailUtil(){
-    setEmailUtil(new EmailUtil(emailProtocol,emailDomain,emailServer,emailPort,emailUserName,emailPassword));
+  public void setEmailUtil() {
+    setEmailUtil(new EmailUtil(emailProtocol, emailDomain, emailServer, emailPort, emailUserName, emailPassword));
   }
 
-  public void setSmsUtil(){
-    setSmsUtil(new  SmsUtil(aliyunSmsProduct,aliyunSmsDomain,aliyunSmsAccessKeyId,aliyunSmsAccessKeySecret,aliyunSmsSignName,aliyunSmsTemplateCode));
+  public void setSmsUtil() {
+    setSmsUtil(new SmsUtil(aliyunSmsProduct, aliyunSmsDomain, aliyunSmsAccessKeyId, aliyunSmsAccessKeySecret, aliyunSmsSignName, aliyunSmsTemplateCode));
   }
 }
