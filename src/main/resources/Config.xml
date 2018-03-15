@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="gb2312" standalone="yes" ?>
 <root>
     <database>
-        <dbip>192.168.20.222</dbip>        <!--数据库ip-->
-        <dbport>5432</dbport>
-        <dbname>vs_ieye</dbname>            <!--数据库名-->
-        <dbusername>postgres</dbusername>
-        <dbpassword>123456</dbpassword>
+        <dbip dbip="192.168.20.222"/>        <!--数据库ip-->
+        <dbport dbport="5432"/>
+        <dbname dbname="vs_ieye"/>            <!--数据库名-->
+        <dbusername dbusername="postgres"/>
+        <dbpassword dbpassword="123456"/>
     </database>
     <storage>
         <Threadcount Threadcount="10"/>    <!--存储线程数-->
@@ -15,25 +15,15 @@
         <dbusername dbusername="postgres"/>
         <dbpassword dbpassword="123456"/>
     </storage>
-    <redis>
-        <name>redis1</name>
-        <ip>192.168.20.251</ip>
-        <port>6379</port>
-    </redis>
-    <activemq>
-        <name>activemq1</name>
-        <ip>192.168.20.222</ip>
-        <port>61616</port>
-    </activemq>
-    <MicroService>
-        <ip>192.168.20.251</ip>
-        <port>2379</port>
-    </MicroService>
+
+    <redis name="redis1" ip="192.168.20.251" port="6379"/>
+
+    <activemq name="activemq1" ip="192.168.20.222" port="61616"/>
+
+    <MicroService ip="192.168.20.251" port="2379"/>
     <server>
-        <local>
-            <ip>192.168.20.12</ip>
-        </local>
-        <grpcttl>30</grpcttl><!-- etcd老化时间 -->
+        <localip ip="192.168.20.12"/>
+        <grpcttl grpcttl="30"/><!-- etcd老化时间 -->
         <rms>
             <local port="6602" httpport="8001"/>      <!--local info-->
         </rms>
@@ -73,35 +63,19 @@
             <local port="6690"/>      <!--local info-->
         </amag>
         <ems>
-            <localport>6710</localport>
-            <alarmBell>
-                <name>alarmBell</name>
-                <ip>192.168.20.253</ip>
-                <port>8080</port>
-                <url>sendMessage</url>
-            </alarmBell>
+            <local port="6710"/>
+            <alarmBell name="alarmBell" ip="192.168.20.253" port="8080" url="sendMessage"/>
         </ems>
         <blg>
-            <localport>6720</localport>
-            <email>
-                <protocol>SMTP</protocol>
-                <server>smtp.163.com</server>
-                <domain>163.com</domain>
-                <port>25</port>
-                <userName>18611813097</userName>
-                <password>vorx123</password>
-            </email>
-            <aliyunSms>
-                <product>Dysmsapi</product>
-                <domain>dysmsapi.aliyuncs.com</domain>
-                <accessKeyId>LTAIEctvEq6hfNqb</accessKeyId>
-                <accessKeySecret>o49v0PVHSIt5ZMCqGHPKQ1dDMJZnfS</accessKeySecret>
-                <templateCode>SMS_123735642</templateCode>
-                <signName>蛙视</signName>
-            </aliyunSms>
+            <local port="6720"/>
+            <email protocol="SMTP" server="smtp.163.com" domain="163.com"/>
+            <email port="25" userName="18611813097" password="vorx123"/>
+            <aliyunSms product="Dysmsapi" domain="dysmsapi.aliyuncs.com"/>
+            <aliyunSms accessKeyId="LTAIEctvEq6hfNqb" accessKeySecret="o49v0PVHSIt5ZMCqGHPKQ1dDMJZnfS"/>
+            <aliyunSms templateCode="SMS_123735642" signName="蛙视"/>
         </blg>
         <iaag>
-            <localport>6730</localport>
+            <local port="6730"/>
             <stream type="1" package="5" trans="1"/>
             <record path="H:/AlarmRecord" timer="180"/>    <!--path: 录像存储路径 timer：录像存储时间-->
             <pic path="H:/AlarmPic" saveday="0"/>    <!--path: 报警图片存储路径 saveday:图片保存天数，为0时，不删除报警图片-->
@@ -116,12 +90,10 @@
             <local port="6900"/>
         </pems>
         <cms>
-            <grpcport>6500</grpcport>
-            <sipport>7700</sipport>
-            <sipid>34020000002000000001</sipid>
+            <local grpcport="6500" sipport="7700" sipid="34020000002000000001"/>
         </cms>
         <log>
-            <localport>6510</localport>
+            <local port="6510"/>
         </log>
         <stream>
             <local portbegin="20000" portend="30000"/>
