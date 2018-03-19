@@ -19,7 +19,7 @@ import java.util.Iterator;
  **/
 public class ConfigReadUtils {
   private InputStream cfgFile;
-  private final String cfgFileName = "Config.xml";
+  private final String cfgFileName = "vs4cfg.xml";
   //private final String cfgFileName = "test.xml";
   private String hostip;
   private int emsPort;
@@ -482,148 +482,173 @@ public class ConfigReadUtils {
 
       Element rootElt = document.getRootElement(); // 获取根节点
       System.out.println("根节点：" + rootElt.getName()); // 拿到根节点的名称
-      Iterator dbIter = rootElt.elementIterator("database"); //获取根节点下的子节点database
-      Iterator redisIter = rootElt.elementIterator("redis");//获取根节点下的子节点redis
-      Iterator activeMqIter = rootElt.elementIterator("activemq");//获取根节点下的子节点activemq
-      Iterator microServiceIter = rootElt.elementIterator("MicroService");//获取根节点下的子节点MicroService
-      Iterator serverIter = rootElt.elementIterator("server");//获取根节点下的子节点server
 
-      //遍历db节点
-      while (dbIter.hasNext()) {
-        Element tableItem = (Element) dbIter.next();
-        dbIp = getXmlValue("dbip", "dbip", tableItem);
-        dbPort = getXmlValue("dbport", "dbport", tableItem);
-        databaseName = getXmlValue("dbname", "dbname", tableItem);
-        dbUser = getXmlValue("dbusername", "dbusername", tableItem);
-        dbPasswd = getXmlValue("dbpassword", "dbpassword", tableItem);
-//        Element tableItem = (Element) dbIter.next();
-//        dbIp = tableItem.elementTextTrim("dbip"); // 拿到database下的字节点dbip的值
-//        dbPort = tableItem.elementTextTrim("dbport");
-//        databaseName = tableItem.elementTextTrim("dbname");
-//        dbUser = tableItem.elementTextTrim("dbusername");
-//        dbPasswd = tableItem.elementTextTrim("dbpassword");
-        dbAddress = dbIp + ":" + dbPort + "/" + databaseName;
-      }
+      Iterator baseIter = rootElt.elementIterator("baservice"); //获取基础服务子节点
+      Iterator bussIter = rootElt.elementIterator("buineservice"); //获取业务服务子节点
 
-      //遍历redis节点
-      while (redisIter.hasNext()) {
-        Element tableItem = (Element) redisIter.next();
-        redisName = getOneXmlValue("redis", "name", tableItem);
-        redisIP = getOneXmlValue("redis", "ip", tableItem);
-        redisPort = Integer.parseInt(getOneXmlValue("redis", "port", tableItem));
-//        redisName = tableItem.elementTextTrim("name"); // 拿到redis下的字节点name的值
-//        redisIP = tableItem.elementTextTrim("ip");
-//        redisPort = Integer.parseInt(tableItem.elementTextTrim("port"));
-      }
+//      Iterator dbIter = rootElt.elementIterator("database"); //获取根节点下的子节点database
+//      Iterator redisIter = rootElt.elementIterator("redis");//获取根节点下的子节点redis
+//      Iterator activeMqIter = rootElt.elementIterator("activemq");//获取根节点下的子节点activemq
+//      Iterator microServiceIter = rootElt.elementIterator("MicroService");//获取根节点下的子节点MicroService
+//      Iterator serverIter = rootElt.elementIterator("server");//获取根节点下的子节点server
 
-      //遍历activemq节点
-      while (activeMqIter.hasNext()) {
-        Element tableItem = (Element) activeMqIter.next();
-        activemqName = getOneXmlValue("activemq", "name", tableItem);
-        activemqIp = getOneXmlValue("activemq", "ip", tableItem);
-        activemqPort = Integer.parseInt(getOneXmlValue("activemq", "port", tableItem));
-//        activemqName = tableItem.elementTextTrim("name"); // 拿到activemq下的字节点name的值
-//        activemqIp = tableItem.elementTextTrim("ip");
-//        activemqPort = Integer.parseInt(tableItem.elementTextTrim("port"));
-      }
-
-      //遍历Microservice节点
-      while (microServiceIter.hasNext()) {
-        Element tableItem = (Element) microServiceIter.next();
-        String ip = getOneXmlValue("MicroService", "ip", tableItem);
-        String port = getOneXmlValue("MicroService", "port", tableItem);
-//        String ip = tableItem.elementTextTrim("ip");
-//        String port = Integer.parseInt(tableItem.elementTextTrim("port"));
-        registerCenterAddress = "http://" + ip + ":" + port;
-      }
-
-      // 遍历server节点
-      while (serverIter.hasNext()) {
-        Element recordEless = (Element) serverIter.next();
+      while (baseIter.hasNext()) {
+        Element baseEle = (Element) baseIter.next();
+        Iterator dbIter = baseEle.elementIterator("database"); //获取子节点database
+        Iterator redisIter = baseEle.elementIterator("redis");//获取子节点redis
+        Iterator activeMqIter = baseEle.elementIterator("activemq");//获取子节点activemq
+        Iterator microServiceIter = baseEle.elementIterator("MicroService");//获取子节点MicroService
+        String ret = "";
+        while (dbIter.hasNext()) {
+          Element tableItem = (Element) dbIter.next();
+          ret = getOneXmlValue("database", "dbip", tableItem);
+          if (ret.length() > 0) dbIp = ret;
+          ret = getOneXmlValue("dbport", "dbport", tableItem);
+          if (ret.length() > 0) dbPort = ret;
+          ret = getOneXmlValue("dbname", "dbname", tableItem);
+          if (ret.length() > 0) databaseName = ret;
+          ret = getOneXmlValue("dbusername", "dbusername", tableItem);
+          if (ret.length() > 0) dbUser = ret;
+          ret = getOneXmlValue("dbpassword", "dbpassword", tableItem);
+          if (ret.length() > 0) dbPasswd = ret;
+        }
+        if (dbIp.length() > 0 && dbPort.length() > 0 && databaseName.length() > 0 && dbUser.length() > 0 && dbPasswd.length() > 0) {
+          dbAddress = dbIp + ":" + dbPort + "/" + databaseName;
+        } else {
+          System.out.println("get database config error");
+        }
+        //redis config
+        while (redisIter.hasNext()) {
+          Element tableItem = (Element) redisIter.next();
+          ret = getOneXmlValue("redis", "name", tableItem);
+          if (ret.length() > 0) redisName = ret;
+          ret = getOneXmlValue("redis", "ip", tableItem);
+          if (ret.length() > 0) redisIP = ret;
+          ret = getOneXmlValue("redis", "port", tableItem);
+          if (ret.length() > 0) redisPort = Integer.parseInt(ret);
+          else redisPort = 0;
+        }
+        if (redisName.length() > 0 && redisIP.length() > 0 && redisPort > 0) {
+          System.out.println("successful read redis config  ");
+        } else {
+          System.out.println("read redis config error");
+        }
+        //遍历activemq节点
+        while (activeMqIter.hasNext()) {
+          Element tableItem = (Element) activeMqIter.next();
+          ret = getOneXmlValue("activemq", "name", tableItem);
+          if (ret.length() > 0) activemqName = ret;
+          ret = getOneXmlValue("activemq", "ip", tableItem);
+          if (ret.length() > 0) activemqIp = ret;
+          ret = getOneXmlValue("activemq", "port", tableItem);
+          if (ret.length() > 0) activemqPort = Integer.parseInt(ret);
+          else activemqPort = 0;
+        }
+        if (activemqName.length() > 0 && activemqIp.length() > 0 && activemqPort > 0) {
+          System.out.println("successful read redis config  ");
+        } else {
+          System.out.println("read redis config error");
+        }
+        //遍历Microservice节点
+        String ip = "";
+        String port = "";
+        while (microServiceIter.hasNext()) {
+          Element tableItem = (Element) microServiceIter.next();
+          ret = getOneXmlValue("MicroService", "ip", tableItem);
+          if (ret.length() > 0) ip = ret;
+          ret = getOneXmlValue("MicroService", "port", tableItem);
+          if (ret.length() > 0) port = ret;
+        }
+        if (ip.length() > 0 && port.length() > 0) {
+          registerCenterAddress = "http://" + ip + ":" + port;
+        } else {
+          System.out.println("read Microservice config error");
+        }
+        while (bussIter.hasNext()) {
+          Element recordEless = (Element) bussIter.next();
 //        ttl = Integer.parseInt(recordEless.elementTextTrim("grpcttl"));
-        Iterator localIter = recordEless.elementIterator("localip"); // 获取子节点server下的子节点local
-        Iterator emsIter = recordEless.elementIterator("ems");
-        Iterator blgIter = recordEless.elementIterator("blg");
-        Iterator logIter = recordEless.elementIterator("log");
-        Iterator ttlIter = recordEless.elementIterator("grpcttl");
-        //遍历local节点
-        while (localIter.hasNext()) {
-          Element tableItem = (Element) localIter.next();
-          hostip = getOneXmlValue("localip", "ip", tableItem);
-          //hostip = tableItem.elementTextTrim("ip");
-        }
-        //遍历grpcttl节点
-        while (ttlIter.hasNext()) {
-          Element tableItem = (Element) ttlIter.next();
-          ttl = Integer.parseInt(getOneXmlValue("grpcttl", "grpcttl", tableItem));
-          //hostip = tableItem.elementTextTrim("ip");
-        }
-        //遍历ems节点
-        while (emsIter.hasNext()) {
-          Element tableItem = (Element) emsIter.next();
-          Iterator emsPortIter = tableItem.elementIterator("local");
-          Iterator alarmBellIter = tableItem.elementIterator("alarmBell");
-          while(emsPortIter.hasNext()) {
-            Element emsPorttableItem = (Element) emsPortIter.next();
-            emsPort = Integer.parseInt(getOneXmlValue("local", "port", emsPorttableItem));
+          Iterator localIter = recordEless.elementIterator("server"); // 获取子节点server下的公共参数
+          Iterator emsIter = recordEless.elementIterator("ems");
+          Iterator blgIter = recordEless.elementIterator("blg");
+          Iterator logIter = recordEless.elementIterator("log");
+          Iterator ttlIter = recordEless.elementIterator("grpcttl");
+          //遍历server下的公共参数
+          while (localIter.hasNext()) {
+            Element tableItem = (Element) localIter.next();
+            hostip = getXmlValue("local", "ip", tableItem);
+            ttl = Integer.parseInt(getXmlValue("grpcttl", "grpcttl", tableItem));
+            //hostip = tableItem.elementTextTrim("ip");
           }
-          //emsPort = Integer.parseInt(tableItem.elementText("localport")); // 获取子节点ems下的子节点localport的值
-          Element itemEle = tableItem;
-          //Iterator alarmBellIter = itemEle.elementIterator("alarmBell");
-          while (alarmBellIter.hasNext()) {
-            Element alarmBellTableItem = (Element) alarmBellIter.next();
-            alarmBellIp = getOneXmlValue("alarmBell","ip",alarmBellTableItem);
-            alarmBellPort = Integer.parseInt(getOneXmlValue("alarmBell","port",alarmBellTableItem));
-            alarmBellUrl = getOneXmlValue("alarmBell","url",alarmBellTableItem);
+          //遍历grpcttl节点
+//          while (ttlIter.hasNext()) {
+//            Element tableItem = (Element) ttlIter.next();
+//            ttl = Integer.parseInt(getOneXmlValue("grpcttl", "grpcttl", tableItem));
+//            //hostip = tableItem.elementTextTrim("ip");
+//          }
+          //遍历ems节点
+          while (emsIter.hasNext()) {
+            Element tableItem = (Element) emsIter.next();
+            Iterator emsPortIter = tableItem.elementIterator("local");
+            Iterator alarmBellIter = tableItem.elementIterator("alarmBell");
+            while (emsPortIter.hasNext()) {
+              Element emsPorttableItem = (Element) emsPortIter.next();
+              emsPort = Integer.parseInt(getOneXmlValue("local", "port", emsPorttableItem));
+            }
+            //emsPort = Integer.parseInt(tableItem.elementText("localport")); // 获取子节点ems下的子节点localport的值
+            Element itemEle = tableItem;
+            //Iterator alarmBellIter = itemEle.elementIterator("alarmBell");
+            while (alarmBellIter.hasNext()) {
+              Element alarmBellTableItem = (Element) alarmBellIter.next();
+              alarmBellIp = getOneXmlValue("alarmBell", "ip", alarmBellTableItem);
+              alarmBellPort = Integer.parseInt(getOneXmlValue("alarmBell", "port", alarmBellTableItem));
+              alarmBellUrl = getOneXmlValue("alarmBell", "url", alarmBellTableItem);
 //            alarmBellIp = tableItem.elementTextTrim("ip"); // 拿到alarmBell下的字节点ip的值
 //            alarmBellPort = Integer.parseInt(tableItem.elementTextTrim("port"));
 //            alarmBellUrl = tableItem.elementTextTrim("url");
+            }
           }
-        }
 
-        while (blgIter.hasNext()) {
-          Element tableItem = (Element) blgIter.next();
-          Iterator blgPortIter = tableItem.elementIterator("local");
-          while(blgPortIter.hasNext()) {
-            Element blgPorttableItem = (Element) blgPortIter.next();
-            blgPort = Integer.parseInt(getOneXmlValue("local", "port", blgPorttableItem));
-          }
-          //blgPort = Integer.parseInt(tableItem.elementText("localport")); // 获取子节点blg下的子节点localport的值
-          Element itemEle = tableItem;
-          Iterator aliyunSmsIter = itemEle.elementIterator("aliyunSms");
-          Iterator emailIter = itemEle.elementIterator("email");
+          while (blgIter.hasNext()) {
+            Element tableItem = (Element) blgIter.next();
+            Iterator blgPortIter = tableItem.elementIterator("local");
+            while (blgPortIter.hasNext()) {
+              Element blgPorttableItem = (Element) blgPortIter.next();
+              blgPort = Integer.parseInt(getOneXmlValue("local", "port", blgPorttableItem));
+            }
+            //blgPort = Integer.parseInt(tableItem.elementText("localport")); // 获取子节点blg下的子节点localport的值
+            Element itemEle = tableItem;
+            Iterator aliyunSmsIter = itemEle.elementIterator("aliyunSms");
+            Iterator emailIter = itemEle.elementIterator("email");
 
-          while (aliyunSmsIter.hasNext()) {
-            tableItem = (Element) aliyunSmsIter.next();
-            String ret;
-            ret = getOneXmlValue("aliyunSms","product",tableItem);
-            if(ret.length() > 0) aliyunSmsProduct = ret;
-            ret = getOneXmlValue("aliyunSms","domain",tableItem);
-            if(ret.length() > 0) aliyunSmsDomain = ret;
-            ret = getOneXmlValue("aliyunSms","accessKeyId",tableItem);
-            if(ret.length() > 0) aliyunSmsAccessKeyId = ret;
-            ret = getOneXmlValue("aliyunSms","accessKeySecret",tableItem);
-            if(ret.length() > 0) aliyunSmsAccessKeySecret = ret;
-            ret = getOneXmlValue("aliyunSms","templateCode",tableItem);
-            if(ret.length() > 0) aliyunSmsTemplateCode = ret;
-            ret =  getOneXmlValue("aliyunSms","signName",tableItem);
-            if(ret.length() > 0) aliyunSmsSignName = ret;
-          }
-          while (emailIter.hasNext()) {
-            tableItem = (Element) emailIter.next();
-            String ret;
-            ret = getOneXmlValue("email","protocol",tableItem);
-            if(ret.length() > 0) emailProtocol = ret;
-            ret = getOneXmlValue("email","server",tableItem);
-            if(ret.length() > 0) emailServer = ret;
-            ret = getOneXmlValue("email","domain",tableItem);
-            if(ret.length() > 0) emailDomain = ret;
-            ret = getOneXmlValue("email","port",tableItem);
-            if(ret.length() > 0) emailPort = ret;
-            ret = getOneXmlValue("email","userName",tableItem);
-            if(ret.length() > 0) emailUserName = ret;
-            ret = getOneXmlValue("email","password",tableItem);
-            if(ret.length() > 0) emailPassword = ret;
+            while (aliyunSmsIter.hasNext()) {
+              tableItem = (Element) aliyunSmsIter.next();
+              ret = getOneXmlValue("aliyunSms", "product", tableItem);
+              if (ret.length() > 0) aliyunSmsProduct = ret;
+              ret = getOneXmlValue("aliyunSms", "domain", tableItem);
+              if (ret.length() > 0) aliyunSmsDomain = ret;
+              ret = getOneXmlValue("aliyunSms", "accessKeyId", tableItem);
+              if (ret.length() > 0) aliyunSmsAccessKeyId = ret;
+              ret = getOneXmlValue("aliyunSms", "accessKeySecret", tableItem);
+              if (ret.length() > 0) aliyunSmsAccessKeySecret = ret;
+              ret = getOneXmlValue("aliyunSms", "templateCode", tableItem);
+              if (ret.length() > 0) aliyunSmsTemplateCode = ret;
+              ret = getOneXmlValue("aliyunSms", "signName", tableItem);
+              if (ret.length() > 0) aliyunSmsSignName = ret;
+            }
+            while (emailIter.hasNext()) {
+              tableItem = (Element) emailIter.next();
+              ret = getOneXmlValue("email", "protocol", tableItem);
+              if (ret.length() > 0) emailProtocol = ret;
+              ret = getOneXmlValue("email", "server", tableItem);
+              if (ret.length() > 0) emailServer = ret;
+              ret = getOneXmlValue("email", "domain", tableItem);
+              if (ret.length() > 0) emailDomain = ret;
+              ret = getOneXmlValue("email", "port", tableItem);
+              if (ret.length() > 0) emailPort = ret;
+              ret = getOneXmlValue("email", "userName", tableItem);
+              if (ret.length() > 0) emailUserName = ret;
+              ret = getOneXmlValue("email", "password", tableItem);
+              if (ret.length() > 0) emailPassword = ret;
 //            emailProtocol = getXmlValue("email","protocol",tableItem);
 //            emailServer = getXmlValue("email","server",tableItem);
 //            emailDomain = getXmlValue("email","domain",tableItem);
@@ -636,14 +661,18 @@ public class ConfigReadUtils {
 //            emailPort = tableItem.elementTextTrim("port");
 //            emailUserName = tableItem.elementTextTrim("userName");
 //            emailPassword = tableItem.elementTextTrim("password");
+            }
+          }
+          while (logIter.hasNext()) {
+            Element tableItem = (Element) logIter.next();
+            logPort = Integer.parseInt(getXmlValue("local", "port", tableItem));
+            //logPort = Integer.parseInt(tableItem.elementText("localport")); // 获取子节点log下的子节点localport的值
           }
         }
-        while (logIter.hasNext()) {
-          Element tableItem = (Element) logIter.next();
-          logPort = Integer.parseInt(getXmlValue("local","port",tableItem));
-          //logPort = Integer.parseInt(tableItem.elementText("localport")); // 获取子节点log下的子节点localport的值
-        }
       }
+
+      // 遍历server节点
+
     } catch (DocumentException e) {
       e.printStackTrace();
       //getLogger().error(e.getMessage(), e);
