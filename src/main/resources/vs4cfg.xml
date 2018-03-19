@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<root>
+    <baservice zhname="基础服务">
+        <database zhname="数据库" dbip="192.168.20.222" dbport="5432" dbname="vs_ieye" dbusername="postgres"
+                  dbpassword="123456"/>
+        <storage zhname="存储服务" Threadcount="10" dbip="192.168.5.4" dbport="5432" dbname="vag" dbusername="postgres"
+                 dbpassword="123456"/>
+        <redis zhname="缓存服务" name="redis1" ip="192.168.20.251" port="6379"/>
+        <activemq zhname="队列服务" name="activemq1" ip="192.168.20.222" port="61616"/>
+        <MicroService zhname="微服务" ip="192.168.20.251" port="2379"/>
+    </baservice>
+    <buineservice zhname="业务服务">
+        <server zhname="公共参数">
+            <local zhname="本地配置" ip="192.168.20.134"/>
+            <grpcttl zhname="注册中心" grpcttl="30"/>
+            <stream zhname="流端口" portbegin="20000" portend="30000"/>
+        </server>
+        <rms zhname="存储服务">
+            <local zhname="本地配置" port="6602" httpport="8001"/>
+        </rms>
+        <vms zhname="电视墙服务">
+            <local zhname="本地配置" port="6604"/>
+        </vms>
+        <onvifvag zhname="onvif视频接入">
+            <local zhname="本地配置" port="6610"/>
+        </onvifvag>
+        <sipvag zhname="sip视频接入">
+            <local zhname="本地配置" port="6620"/>
+            <Sip zhname="sip" id="34020000002000000003" port="7710"/>
+        </sipvag>
+        <vcxvag zhname="vcx视频接入">
+            <local zhname="本地配置" port="6630"/>
+        </vcxvag>
+        <ixvrvag zhname="ixvr视频接入">
+            <local zhname="本地配置" port="6640"/>
+        </ixvrvag>
+        <cloud2vag zhname="云2.0视频接入">
+            <local zhname="本地配置" port="6650"/>
+        </cloud2vag>
+        <cvsavag zhname="cvsa视频接入">
+            <local zhname="本地配置" port="6660"/>
+        </cvsavag>
+        <cloud zhname="上云服务">
+            <local zhname="本地配置" port="6670"/>
+            <Plat4.0 zhname="4.0平台" username="admin" password="vorx"/>
+        </cloud>
+        <kps zhname="键盘">
+            <local zhname="本地配置" port="6606" devport="6674"/>
+        </kps>
+        <mag zhname="移动接入">
+            <local zhname="本地配置" port="6680"/>
+        </mag>
+        <amag zhname="矩阵接入">
+            <local zhname="本地配置" port="6690"/>
+        </amag>
+        <ems zhname="事件">
+            <local zhname="本地配置" port="6710"/>
+            <alarmBell zhname="报警响铃" name="alarmBell" ip="192.168.20.253" port="8080" url="sendMessage"/>
+        </ems>
+        <blg zhname="联动">
+            <local zhname="本地配置" port="6720"/>
+            <email zhname="邮件" protocol="SMTP" server="smtp.163.com" domain="163.com" port="25" userName="18611813097"
+                   password="vorx123"/>
+            <aliyunSms zhname="短信" product="Dysmsapi" domain="dysmsapi.aliyuncs.com" accessKeyId="LTAIEctvEq6hfNqb"
+                       accessKeySecret="o49v0PVHSIt5ZMCqGHPKQ1dDMJZnfS" templateCode="SMS_123735642" signName="蛙视"/>
+        </blg>
+        <iaag zhname="智能分析">
+            <local zhname="本地配置" port="6730"/>
+            <stream zhname="流" type="1" package="5" trans="1"/>
+            <record zhname="录像" path="H:/AlarmRecord" timer="180"/>
+            <pic zhname="图片" path="H:/AlarmPic" saveday="0"/>
+        </iaag>
+        <siovag zhname="开关量接入">
+            <local zhname="本地配置" port="6740" devport="6742"/>
+        </siovag>
+        <nms zhname="运维管理">
+            <local zhname="本地配置" port="6800"/>
+        </nms>
+        <pems zhname="动环管理">
+            <local zhname="本地配置" port="6900"/>
+        </pems>
+        <cms zhname="中心管理">
+            <local zhname="本地配置" grpcport="6500" sipport="7700" sipid="34020000002000000001"/>
+        </cms>
+        <log zhname="日志">
+            <local zhname="本地配置" port="6510"/>
+        </log>
+    </buineservice>
+</root>
+
