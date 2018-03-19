@@ -22,7 +22,7 @@
 
     <MicroService ip="192.168.20.251" port="2379"/>
     <server>
-        <localip ip="192.168.20.12"/>
+        <localip ip="192.168.20.134"/>
         <grpcttl grpcttl="30"/><!-- etcd老化时间 -->
         <rms>
             <local port="6602" httpport="8001"/>      <!--local info-->
