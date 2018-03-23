@@ -484,7 +484,7 @@ public class ConfigReadUtils {
       System.out.println("根节点：" + rootElt.getName()); // 拿到根节点的名称
 
       Iterator baseIter = rootElt.elementIterator("baservice"); //获取基础服务子节点
-      Iterator bussIter = rootElt.elementIterator("buineservice"); //获取业务服务子节点
+      Iterator bussIter = rootElt.elementIterator("busineservice"); //获取业务服务子节点
 
 //      Iterator dbIter = rootElt.elementIterator("database"); //获取根节点下的子节点database
 //      Iterator redisIter = rootElt.elementIterator("redis");//获取根节点下的子节点redis

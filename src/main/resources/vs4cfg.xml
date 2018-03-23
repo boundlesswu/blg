@@ -9,7 +9,7 @@
         <activemq zhname="队列服务" name="activemq1" ip="192.168.20.222" port="61616"/>
         <MicroService zhname="微服务" ip="192.168.20.251" port="2379"/>
     </baservice>
-    <buineservice zhname="业务服务">
+    <busineservice zhname="业务服务">
         <server zhname="公共参数">
             <local zhname="本地配置" ip="192.168.20.134"/>
             <grpcttl zhname="注册中心" grpcttl="30"/>
@@ -85,6 +85,6 @@
         <log zhname="日志">
             <local zhname="本地配置" port="6510"/>
         </log>
-    </buineservice>
+    </busineservice>
 </root>
 

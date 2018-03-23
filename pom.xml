@@ -55,8 +55,8 @@
                                 <copy file="${basedir}/target/blg-${version}-jar-with-dependencies.jar"
                                       tofile="${basedir}/target/blg_service/blg_service.jar"
                                       overwrite="true"/>
-                                <copy file="${basedir}\src\main\resources\Config.xml"
-                                      tofile="${basedir}/target/Config.xml"
+                                <copy file="${basedir}\src\main\resources\vs4cfg.xml"
+                                      tofile="${basedir}/target/vs4cfg.xml"
                                       overwrite="true"/>
                                 <copy file="${basedir}\version.txt"
                                       tofile="${basedir}/target/blg_service/version.txt"
