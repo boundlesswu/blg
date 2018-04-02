@@ -64,6 +64,18 @@
                                 <copy file="${basedir}\startup.bat"
                                       tofile="${basedir}/target/blg_service/startup.bat"
                                       overwrite="true"/>
+                                <copy file="${basedir}\blg_service.exe"
+                                      tofile="${basedir}/target/blg_service/blg_service.exe"
+                                      overwrite="true"/>
+                                <copy file="${basedir}\blg_service.xml"
+                                      tofile="${basedir}/target/blg_service/blg_service.xml"
+                                      overwrite="true"/>
+                                <copy file="${basedir}\创建服务.bat"
+                                      tofile="${basedir}/target/blg_service/创建服务.bat"
+                                      overwrite="true"/>
+                                <copy file="${basedir}\删除服务.bat"
+                                      tofile="${basedir}/target/blg_service/删除服务.bat"
+                                      overwrite="true"/>
                             </tasks>
                         </configuration>
                         <goals>

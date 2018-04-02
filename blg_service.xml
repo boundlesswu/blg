@@ -1,0 +1,11 @@
+<service>
+  <id>server_blg</id>
+  <name>server_blg</name>
+  <description>blg Service</description>
+  <log mode="none"/>
+  <executable>C:\Program Files\vorx\blg_service\startup.bat</executable>
+  <startarguments></startarguments>
+  <stopexecutable></stopexecutable>
+  <stoparguments></stoparguments>
+  <delayedAutoStart/>
+</service>
