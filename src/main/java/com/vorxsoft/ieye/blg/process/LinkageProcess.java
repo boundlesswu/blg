@@ -15,13 +15,15 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static com.vorxsoft.ieye.blg.util.Constant.*;
 
 public class LinkageProcess implements Runnable {
   private String name;
   //private Jedis jedis;
-  private RedisUtil redisUtil;
+  //private RedisUtil redisUtil;
+  private ConcurrentLinkedQueue<String> cq ;
   private Connection conn;
   VsIeyeClient cmsIeyeClient;
   HashMap<String, LinkageItem> linkageItemHashMap;
@@ -31,13 +33,21 @@ public class LinkageProcess implements Runnable {
   private static Logger logger = LogManager.getLogger(LinkageProcess.class.getName());
   private LogServiceClient logServiceClient;
 
-  public RedisUtil getRedisUtil() {
-    return redisUtil;
+  public ConcurrentLinkedQueue<String> getCq() {
+    return cq;
   }
 
-  public void setRedisUtil(RedisUtil redisUtil) {
-    this.redisUtil = redisUtil;
+  public void setCq(ConcurrentLinkedQueue<String> cq) {
+    this.cq = cq;
   }
+
+//  public RedisUtil getRedisUtil() {
+//    return redisUtil;
+//  }
+//
+//  public void setRedisUtil(RedisUtil redisUtil) {
+//    this.redisUtil = redisUtil;
+//  }
 
   public SmsUtil getSmsUtil() {
     return smsUtil;
@@ -411,34 +421,52 @@ public class LinkageProcess implements Runnable {
   }
 
   public List<ReportLinkageRequest> getReportLinkageRequest() throws com.googlecode.protobuf.format.JsonFormat.ParseException {
-    String patterKey = "eventWithLinkage_*";
-    Set<String> set = redisUtil.keys(patterKey);
-    if (set.size() == 0) {
-      //System.out.println("patterKey :" + patterKey + "is not exist");
-      //getLogger().debug("patterKey :" + patterKey + "is not exist");
-      return null;
-    }
     List<ReportLinkageRequest> reportLinkageRequests = new ArrayList<>();
-    Iterator<String> it = set.iterator();
-    while (it.hasNext()) {
-      String keyStr = it.next();
-      String s = redisUtil.hget(keyStr, "req");
-      if (s == null || s.length() == 0) {
-        getLogger().debug("get request is null");
-        continue;
-      }
-
+    int i = 0;
+    while(!getCq().isEmpty() ||  i > 10) {
+      String tmp = getCq().poll();
+      i++;
       ReportLinkageRequest.Builder builder = ReportLinkageRequest.newBuilder();
       try {
-        JsonFormat.parser().merge(s, builder);
+        JsonFormat.parser().merge(tmp, builder);
         ReportLinkageRequest req = builder.build();
         reportLinkageRequests.add(req);
-        redisUtil.del(keyStr);
       } catch (InvalidProtocolBufferException e) {
         e.printStackTrace();
         getLogger().error(e.getMessage(), e);
       }
     }
     return reportLinkageRequests;
-  }
+    }
+
+//    String patterKey = "eventWithLinkage_*";
+//    Set<String> set = redisUtil.keys(patterKey);
+//    if (set.size() == 0) {
+//      //System.out.println("patterKey :" + patterKey + "is not exist");
+//      //getLogger().debug("patterKey :" + patterKey + "is not exist");
+//      return null;
+//    }
+//    List<ReportLinkageRequest> reportLinkageRequests = new ArrayList<>();
+//    Iterator<String> it = set.iterator();
+//    while (it.hasNext()) {
+//      String keyStr = it.next();
+//      String s = redisUtil.hget(keyStr, "req");
+//      if (s == null || s.length() == 0) {
+//        getLogger().debug("get request is null");
+//        continue;
+//      }
+//
+//      ReportLinkageRequest.Builder builder = ReportLinkageRequest.newBuilder();
+//      try {
+//        JsonFormat.parser().merge(s, builder);
+//        ReportLinkageRequest req = builder.build();
+//        reportLinkageRequests.add(req);
+//        redisUtil.del(keyStr);
+//      } catch (InvalidProtocolBufferException e) {
+//        e.printStackTrace();
+//        getLogger().error(e.getMessage(), e);
+//      }
+//    }
+//    return reportLinkageRequests;
+//  }
 }

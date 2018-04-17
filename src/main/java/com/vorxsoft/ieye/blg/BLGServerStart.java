@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 import static com.vorxsoft.ieye.proto.VSLogLevel.VSLogLevelInfo;
@@ -54,6 +55,15 @@ public class BLGServerStart implements WatchCallerInterface {
   private String aliyunSmsTemplateCode;
   private String aliyunSmsSignName;
   private RedisUtil redisUtil;
+  private ConcurrentLinkedQueue<String> cq ;
+
+  public ConcurrentLinkedQueue<String> getCq() {
+    return cq;
+  }
+
+  public void setCq(ConcurrentLinkedQueue<String> cq) {
+    this.cq = cq;
+  }
 
   public LogServiceClient getLogServiceClient() {
     return logServiceClient;
@@ -183,8 +193,14 @@ public class BLGServerStart implements WatchCallerInterface {
     //jedis = new Jedis(redisIp, redisPort);
   }
 
+  public void cqInit() {
+    cq = new ConcurrentLinkedQueue<String>();
+    //jedis = new Jedis(redisIp, redisPort);
+  }
+
   private void start() throws Exception {
-    server = NettyServerBuilder.forPort(PORT).addService(new BLGServer(redisUtil).bindService()).build();
+    //server = NettyServerBuilder.forPort(PORT).addService(new BLGServer(redisUtil).bindService()).build();
+    server = NettyServerBuilder.forPort(PORT).addService(new BLGServer(cq).bindService()).build();
     server.start();
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -225,7 +241,8 @@ public class BLGServerStart implements WatchCallerInterface {
     blgServerStart.setEmailUtil();
     blgServerStart.setSmsUtil();
 
-    blgServerStart.redisInit();
+    //blgServerStart.redisInit();
+    blgServerStart.cqInit();
     blgServerStart.dbInit();
 
     MicroService myservice = new MicroServiceImpl();
@@ -264,7 +281,8 @@ public class BLGServerStart implements WatchCallerInterface {
     linkageProcess.setName("linkageProcess");
 
     linkageProcess.dbInit(dbname, dbAddress, driverClassName, dbUser, dbPasswd);
-    linkageProcess.setRedisUtil(blgServerStart.getRedisUtil());
+    linkageProcess.setCq(blgServerStart.getCq());
+    //linkageProcess.setRedisUtil(blgServerStart.getRedisUtil());
     linkageProcess.setEmailUtil(blgServerStart.getEmailUtil());
     linkageProcess.setSmsUtil(blgServerStart.getSmsUtil());
 

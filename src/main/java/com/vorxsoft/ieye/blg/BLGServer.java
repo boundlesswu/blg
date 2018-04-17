@@ -8,10 +8,20 @@ import com.vorxsoft.ieye.proto.*;
 import io.grpc.stub.StreamObserver;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
   public RedisUtil getRedisUtil() {
     return redisUtil;
+  }
+  private ConcurrentLinkedQueue<String> cq ;
+
+  public ConcurrentLinkedQueue<String> getCq() {
+    return cq;
+  }
+
+  public void setCq(ConcurrentLinkedQueue<String> cq) {
+    this.cq = cq;
   }
 
   public void setRedisUtil(RedisUtil redisUtil) {
@@ -25,7 +35,9 @@ public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
   BLGServer(RedisUtil redisUtil) {
     setRedisUtil(redisUtil);
   }
-
+  BLGServer(ConcurrentLinkedQueue<String> cq) {
+    setCq(cq);
+  }
 //  BLGServer(String ip, int port) {
 //    jedis = new Jedis(ip, port);
 //  }
@@ -109,8 +121,10 @@ public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
       } catch (InvalidProtocolBufferException e) {
         e.printStackTrace();
       }
+
+      cq.offer(s);
       //System.out.println("s");
-      redisUtil.hset("eventWithLinkage_" + String.valueOf(System.currentTimeMillis()), "req", s);
+      //redisUtil.hset("eventWithLinkage_" + String.valueOf(System.currentTimeMillis()), "req", s);
     }
 //    for (int i = 0; i < req.getEventWithLinkagesCount(); i++) {
 //      EventWithLinkage eventWithLinkage = req.getEventWithLinkages(i);
