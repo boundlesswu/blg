@@ -140,10 +140,12 @@ public class LinkageProcess implements Runnable {
       //System.out.println(name + "运行  :  " + i);
       try {
         processLinkages();
-        Thread.sleep((int) Math.random() * 10);
+        Thread.sleep(100);
+        //Thread.sleep((int) Math.random() * 1000);
         processLinkageItemHashMap();
-        Thread.sleep((int) Math.random() * 10);
-        if (i % 2000 == 0) {
+        Thread.sleep(100);
+        //Thread.sleep((int) Math.random() * 1000);
+        if (i % 20 == 0) {
           System.out.println("process :" + getName() + "is running");
         }
       } catch (InterruptedException e) {

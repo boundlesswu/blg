@@ -3,7 +3,6 @@ package com.vorxsoft.ieye.blg;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
 import com.vorxsoft.ieye.blg.process.LinkageItem;
-import com.vorxsoft.ieye.blg.util.RedisUtil;
 import com.vorxsoft.ieye.proto.*;
 import io.grpc.stub.StreamObserver;
 
@@ -11,9 +10,12 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
-  public RedisUtil getRedisUtil() {
-    return redisUtil;
-  }
+//  public RedisUtil getRedisUtil() {
+//    return redisUtil;
+//  }
+//  public void setRedisUtil(RedisUtil redisUtil) {
+//    this.redisUtil = redisUtil;
+//  }
   private ConcurrentLinkedQueue<String> cq ;
 
   public ConcurrentLinkedQueue<String> getCq() {
@@ -24,17 +26,15 @@ public class BLGServer extends VsIeyeProtoGrpc.VsIeyeProtoImplBase {
     this.cq = cq;
   }
 
-  public void setRedisUtil(RedisUtil redisUtil) {
-    this.redisUtil = redisUtil;
-  }
 
-  private RedisUtil redisUtil;
+
+  //private RedisUtil redisUtil;
   //private Jedis jedis;
   HashMap<String, LinkageItem> linkageItemHashMap;
 
-  BLGServer(RedisUtil redisUtil) {
-    setRedisUtil(redisUtil);
-  }
+//  BLGServer(RedisUtil redisUtil) {
+//    setRedisUtil(redisUtil);
+//  }
   BLGServer(ConcurrentLinkedQueue<String> cq) {
     setCq(cq);
   }

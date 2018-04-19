@@ -8,7 +8,6 @@ import com.vorxsoft.ieye.blg.grpc.VsIeyeClient;
 import com.vorxsoft.ieye.blg.process.LinkageProcess;
 import com.vorxsoft.ieye.blg.util.ConfigReadUtils;
 import com.vorxsoft.ieye.blg.util.EmailUtil;
-import com.vorxsoft.ieye.blg.util.RedisUtil;
 import com.vorxsoft.ieye.blg.util.SmsUtil;
 import com.vorxsoft.ieye.microservice.MicroService;
 import com.vorxsoft.ieye.microservice.MicroServiceImpl;
@@ -54,7 +53,7 @@ public class BLGServerStart implements WatchCallerInterface {
   private String aliyunSmsAccessKeySecret;
   private String aliyunSmsTemplateCode;
   private String aliyunSmsSignName;
-  private RedisUtil redisUtil;
+  //private RedisUtil redisUtil;
   private ConcurrentLinkedQueue<String> cq ;
 
   public ConcurrentLinkedQueue<String> getCq() {
@@ -151,13 +150,13 @@ public class BLGServerStart implements WatchCallerInterface {
   private SmsUtil smsUtil;
   private EmailUtil emailUtil;
 
-  public RedisUtil getRedisUtil() {
-    return redisUtil;
-  }
-
-  public void setRedisUtil(RedisUtil redisUtil) {
-    this.redisUtil = redisUtil;
-  }
+//  public RedisUtil getRedisUtil() {
+//    return redisUtil;
+//  }
+//
+//  public void setRedisUtil(RedisUtil redisUtil) {
+//    this.redisUtil = redisUtil;
+//  }
 
   public SmsUtil getSmsUtil() {
     return smsUtil;
@@ -188,10 +187,10 @@ public class BLGServerStart implements WatchCallerInterface {
     //st = conn.createStatement();
   }
 
-  public void redisInit() {
-    redisUtil = new RedisUtil(redisIp, redisPort);
-    //jedis = new Jedis(redisIp, redisPort);
-  }
+//  public void redisInit() {
+//    redisUtil = new RedisUtil(redisIp, redisPort);
+//    //jedis = new Jedis(redisIp, redisPort);
+//  }
 
   public void cqInit() {
     cq = new ConcurrentLinkedQueue<String>();
