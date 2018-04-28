@@ -21,9 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +52,7 @@ public class BLGServerStart implements WatchCallerInterface {
   private String aliyunSmsTemplateCode;
   private String aliyunSmsSignName;
   //private RedisUtil redisUtil;
-  private ConcurrentLinkedQueue<String> cq ;
+  private ConcurrentLinkedQueue<String> cq;
 
   public ConcurrentLinkedQueue<String> getCq() {
     return cq;
@@ -243,6 +241,8 @@ public class BLGServerStart implements WatchCallerInterface {
     //blgServerStart.redisInit();
     blgServerStart.cqInit();
     blgServerStart.dbInit();
+    //email cfg
+    blgServerStart.getEmailCfgfromDB();
 
     MicroService myservice = new MicroServiceImpl();
     myservice.init(registerCenterAddress, blgServerStart);
@@ -297,6 +297,27 @@ public class BLGServerStart implements WatchCallerInterface {
       cfgFile = new FileInputStream(new File(System.getProperty("user.dir") + File.separator + cfgFileName));
     else
       cfgFile = this.getClass().getClassLoader().getResourceAsStream(cfgFileName);
+  }
+
+  public void getEmailCfgfromDB() throws SQLException {
+
+    String sql = "SELECT sender_mailbox,smtp_address,smtp_port,username,password,event_level,auto_release_interval,event_type,ti_event.guard_plan_id " +
+            "from ti_smtp where enable_state = 1";
+    PreparedStatement pstmt = conn.prepareStatement(sql);
+    ResultSet ret = pstmt.executeQuery();
+    while (ret.next()) {
+      String sender_mailbox = ret.getString(1);
+      String smtp_address = ret.getString(2);
+      int smtp_port = ret.getInt(3);
+      String username = ret.getString(4);
+      String password = ret.getString(5);
+      emailProtocol = "SMTP";
+      emailServer = sender_mailbox;
+      emailDomain = smtp_address;
+      emailPort = String.valueOf(smtp_port);
+      emailUserName = username;
+      emailPassword = password;
+    }
   }
 
   public void cfgInit() throws FileNotFoundException {
