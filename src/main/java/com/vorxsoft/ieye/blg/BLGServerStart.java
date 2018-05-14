@@ -301,7 +301,7 @@ public class BLGServerStart implements WatchCallerInterface {
 
   public void getEmailCfgfromDB() throws SQLException {
 
-    String sql = "SELECT sender_mailbox,smtp_address,smtp_port,username,password,event_level,auto_release_interval,event_type,ti_event.guard_plan_id " +
+    String sql = "SELECT sender_mailbox,smtp_address,smtp_port,username,password " +
             "from ti_smtp where enable_state = 1";
     PreparedStatement pstmt = conn.prepareStatement(sql);
     ResultSet ret = pstmt.executeQuery();
